@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import handler from '../api/post.js';
 import builder from '../api/builder.js';
-const files = { '/icon.svg': ['icon.svg', 'image/svg+xml'], '/favicon.ico': ['favicon.ico', 'image/x-icon'], '/apple-touch-icon.png': ['apple-touch-icon.png', 'image/png'], '/': ['index.html', 'text/html'], '/style.css': ['style.css', 'text/css'], '/robots.txt': ['robots.txt', 'text/plain'], '/llms.txt': ['llms.txt', 'text/plain'] };
+const files = { '/sitemap.xml': ['sitemap.xml', 'application/xml'], '/icon.svg': ['icon.svg', 'image/svg+xml'], '/favicon.ico': ['favicon.ico', 'image/x-icon'], '/apple-touch-icon.png': ['apple-touch-icon.png', 'image/png'], '/': ['index.html', 'text/html'], '/style.css': ['style.css', 'text/css'], '/robots.txt': ['robots.txt', 'text/plain'], '/llms.txt': ['llms.txt', 'text/plain'] };
 createServer(async (req, res) => {
   const path = new URL(req.url, 'http://localhost').pathname;
   if (path === '/builder' || path === '/api/builder') return builder(req, res);

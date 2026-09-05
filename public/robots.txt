@@ -1,2 +1,5 @@
+# Documentation is crawlable; API URLs can execute requests.
 User-agent: *
 Disallow: /api/
+
+Sitemap: https://get2post.vercel.app/sitemap.xml

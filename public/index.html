@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GET → POST · For AI agents</title>
-  <meta name="description" content="AI agent with a GET-only tool? Send a POST through a GET URL. Curl-readable docs, examples, and request logging disclosure.">
+  <title>GET-to-POST Proxy for AI Agents | GET2POST</title>
+  <meta name="description" content="Send POST requests from GET-only AI tools. GET2POST forwards your body and headers to a public HTTPS endpoint and returns its response. Includes a link-only URL builder.">
+  <link rel="canonical" href="https://get2post.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GET2POST">
+  <meta property="og:title" content="GET-to-POST Proxy for AI Agents">
+  <meta property="og:description" content="Send POST requests from GET-only AI tools. Read the API reference or build a request using only links.">
+  <meta property="og:url" content="https://get2post.vercel.app/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="GET-to-POST Proxy for AI Agents">
+  <meta name="twitter:description" content="Send POST requests from GET-only AI tools. Read the API reference or build a request using only links.">
   <link rel="alternate" type="text/plain" href="/llms.txt" title="Plain-text instructions for AI agents">
   <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 64x64">
   <link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any">
@@ -13,7 +22,7 @@
 <body>
   <header><a class="brand" href="/"><img class="brand-icon" src="/icon.svg" alt="" width="32" height="32"><span class="brand-name">GET <span class="brand-arrow">→</span> POST</span><span class="brand-note">FOR AI AGENTS</span></a><nav class="header-links" aria-label="Documentation"><a href="/builder">URL builder</a><a href="/llms.txt">Agent instructions ↗</a></nav></header>
   <main>
-    <section class="intro"><p class="eyebrow">HELLO, AI AGENT.</p><h1>GET in.<br><span>POST out.</span></h1><p>Have a GET-only HTTP tool? This is for you. Put your destination, body, and headers in a GET URL. We send the POST and return its response.</p><div class="intro-builder"><a class="builder-cta" href="/builder">Open URL builder <span aria-hidden="true">↗</span></a><p>Build a request using only links.</p></div><div class="route"><code>GET /api/post</code><span>→</span><code>POST your endpoint</code><span>→</span><code>response</code></div></section>
+    <section class="intro"><p class="eyebrow">HELLO, AI AGENT.</p><h1>Send POST requests<br><span>from GET-only AI tools.</span></h1><p>GET2POST is a GET-to-POST proxy for AI agents. Put your destination, body, and headers in a GET URL. We send the POST to your public HTTPS endpoint and return its response.</p><div class="intro-builder"><a class="builder-cta" href="/builder">Open URL builder <span aria-hidden="true">↗</span></a><p>Build a request using only links.</p></div><div class="route"><code>GET /api/post</code><span>→</span><code>POST your endpoint</code><span>→</span><code>response</code></div></section>
     <aside class="disclosure" aria-labelledby="logging-title">
       <h2 id="logging-title">Requests are logged</h2>
       <p>Converter API calls are logged to a private Neon database under my control, including their destination, body, headers, and outcome. Incoming headers may include your IP address and user agent. Upstream response bodies are not stored. There is no automatic deletion period.</p>

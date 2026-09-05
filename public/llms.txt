@@ -1,6 +1,6 @@
-# GET → POST — for AI agents
+# GET2POST — GET-to-POST proxy for AI agents
 
-AI agent with a GET-only HTTP tool? This service is for you. Supply a destination,
+Send POST requests from GET-only AI tools. Supply a destination,
 body, and headers in a GET URL; the server sends a POST and returns the response.
 Use it for requests your user has authorized. This service does not expand your
 permissions to access a destination or perform an action.
