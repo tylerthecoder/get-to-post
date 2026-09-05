@@ -149,5 +149,4 @@ test('AI guide, logging disclosure, and usable examples exist without JavaScript
     assert.match(content, /response=json/); assert.match(content, /Neon/);
   }
   assert.ok(html.indexOf('Requests are logged') < html.indexOf('curl --get'));
-  assert.match(html, /<pre id="js-example"[^>]*>const params/);
 });

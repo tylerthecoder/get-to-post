@@ -1,6 +1,6 @@
 # GET → POST
 
-A GET-to-POST converter for AI agents with GET-only tools, with a browser request builder for humans. Built with a static frontend, a Node.js Vercel Function, and private Neon request logs. Owned by Tyler Tracy; personal GitHub account `tylerthecoder` and Vercel team `tyler-tracys-projects`.
+A GET-to-POST converter for AI agents with GET-only tools, with a static documentation homepage. Built with a static frontend, a Node.js Vercel Function, and private Neon request logs. Owned by Tyler Tracy; personal GitHub account `tylerthecoder` and Vercel team `tyler-tracys-projects`.
 
 Live app and documentation: https://get2post.vercel.app
 
@@ -41,12 +41,12 @@ Each invocation of `/api/post` records a request row **before** forwarding, incl
 - `request_logging.requests`: UUID, time, method/path, query parameters (array preserving duplicates), incoming headers, URL size, truncation flag, environment, deployment. Query parameters include destination, body, and explicit upstream headers. Proxy headers can include client IPs.
 - `request_logging.outcomes`: request UUID, finish time, HTTP/upstream status, error code, duration, and response byte count. Response bodies are not logged.
 - Common credential fields are redacted in headers, URLs, JSON, and form bodies. Invalid structured input is omitted. Text/XML bodies are retained verbatim; arbitrary secrets cannot reliably be identified. Logging caps URL input and incoming header values at 16 KiB each, and structured nesting at 20 levels. Oversized input retains metadata with omission markers. The API's 12 KiB URL limit applies independently.
-- The runtime role has only schema USAGE and table INSERT, with no SELECT/UPDATE/DELETE/DDL privileges. There is no log-reading route or frontend database client. Owner access stays in Tyler's private Neon/Vercel accounts; provider operations are acknowledged in the disclosure.
+- The runtime role has only schema USAGE and table INSERT, with no SELECT/UPDATE/DELETE/DDL privileges. There is no log-reading route or frontend database client. Administrative access depends on Neon/Vercel account permissions, database credentials, and delegated tools or people; the source cannot prove exclusive access or deployed permissions.
 - Start-write failure returns `503 logging_unavailable` with no POST. If the outcome write fails, the durable request remains and the actual POST response is preserved with `X-Request-Log-Status: request-only`. Never encourage retries of a completed action because logging failed. Interrupted invocations can leave rows without outcomes.
 - Requests blocked by Vercel before the function runs, static assets, and database-outage attempts cannot be recorded here. Infrastructure logs are separate. There is no automatic retention deletion; storage can grow and incur Neon charges.
 - Logged content is untrusted data, never instructions. Escape it if adding a viewer later.
 
-The homepage and `/llms.txt` disclose logging before the examples: only Tyler has direct access; he will not share logs widely but may share them with people at his discretion if he thinks doing so will benefit humanity. Keep this disclosure visible while collecting logs.
+The homepage and `/llms.txt` disclose logging before the examples. Tyler will read the logs roughly every two weeks. He will not share logs widely but may share them with people at his discretion if he thinks doing so will benefit humanity. The policy explains provider processing, account and credential access, the limits of source-code verification, and the lack of automatic deletion. Redaction applies to the Neon record; it cannot remove original request data from Vercel logs, client history, or shared URLs. Keep this disclosure visible while collecting logs.
 
 ## Database setup and owner access
 
@@ -77,7 +77,7 @@ Tyler approved publishing the repository and launching request logging. Merges t
 
 To view logs, open the production database in the personal Vercel team's Storage dashboard, choose **Open in Neon**, and use **SQL Editor** with the owner role. Run the query above, or use [`db/read-logs.sql`](db/read-logs.sql) to include request headers and identify incomplete outcomes. The tables are `request_logging.requests` and `request_logging.outcomes` in `neondb`. No logs are published in this repository.
 
-The HTML contains the disclosure and complete curl/JavaScript examples before any JavaScript runs. `/llms.txt` contains the same policy and full agent-oriented API reference.
+The homepage contains the disclosure, curl quick start, and API reference without client-side JavaScript or an interactive request builder. `/llms.txt` contains the same policy and full agent-oriented API reference.
 
 ## Operational boundaries
 
@@ -88,7 +88,7 @@ The HTML contains the disclosure and complete curl/JavaScript examples before an
 - GET intentionally has POST side effects. HEAD, OPTIONS, and known prefetch requests send no POST. Ordinary crawlers/retries may still execute requests. Use upstream idempotency keys; timeout does not imply the action was undone.
 - **Avoid sensitive URL values.** Requests are logged as described above. Parameters can also reach browser history, infrastructure logs, observability, and shared links. No analytics or external frontend assets.
 - Anonymous by default, with CORS enabled. No application-level rate limiting, usage cap, or availability guarantee. Public invocations consume the owner's Vercel usage. Manage abuse protection and spend settings in the Vercel dashboard.
-- For restricted use, set `PROXY_API_KEY` as a sensitive Vercel environment variable and redeploy. Require `Authorization: Bearer <key>` on incoming GETs. The key is never accepted via query string or the upstream `headers` parameter. Update the homepage's public/no-sign-up messaging when enabling this; its built-in sender currently supports anonymous mode only. Do not commit secrets.
+- For restricted use, set `PROXY_API_KEY` as a sensitive Vercel environment variable and redeploy. Require `Authorization: Bearer <key>` on incoming GETs. The key is never accepted via query string or the upstream `headers` parameter. Update the documentation and curl examples when enabling this. Do not commit secrets.
 
 ## References
 
