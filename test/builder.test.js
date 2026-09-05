@@ -43,20 +43,20 @@ test('a link-only client constructs the acceptance request; only final execution
     assert.equal(sent.length, 0); assert.equal(logged.length, 0);
   }
   const follow = (label) => visit(find(html, label));
-  const append = async (group, text) => { await follow(group); for (const char of text) await follow(char); };
+  const append = async (text) => { for (const char of text) await follow(char); };
   await visit('/builder');
   assert.ok(!html.includes('httpbin'));
   assert.ok(!links(html).some((item) => item.href.startsWith('/api/post?')));
   await follow('Edit destination');
   await follow('https://');
-  await append('Letters', 'httpbin');
-  await follow('Common URL fragments'); await follow('.org'); await follow('/');
-  await append('Letters', 'post'); await follow('Done');
+  await append('httpbin');
+  await follow('.org'); await follow('/');
+  await append('post'); await follow('Done');
   await follow('Edit body'); await follow('{"');
-  await append('Letters', 'message');
-  await follow('JSON fragments'); await follow('\":\"');
-  await append('Letters', 'hello');
-  await follow('JSON fragments'); await follow('"}'); await follow('Done');
+  await append('message');
+  await follow('\":\"');
+  await append('hello');
+  await follow('"}'); await follow('Done');
   await follow('Review request');
   const execute = find(html, 'Execute request');
   const params = new URL(execute, base).searchParams;
@@ -87,10 +87,7 @@ test('arbitrary fields, Unicode, correction controls, and response selection wor
   const follow = (label) => { const result = renderBuilder(find(html, label)); assert.equal(result.status, 200); html = result.html; };
   function type(field, value) {
     follow(`Edit ${field}`); follow('Clear field');
-    let previous;
     for (const char of value) {
-      const group = /[a-z]/.test(char) ? 'Letters' : /[A-Z]/.test(char) ? 'Uppercase letters' : /[0-9]/.test(char) ? 'Numbers' : 'Symbols';
-      if (group !== previous) { follow(group); previous = group; }
       follow(({ ' ': 'Space', '\n': 'Newline', '\t': 'Tab' })[char] ?? char);
     }
     follow('Done');
@@ -101,7 +98,9 @@ test('arbitrary fields, Unicode, correction controls, and response selection wor
   type('destination', destination); type('body', data); type('headers', headers);
   follow('Edit body'); follow('Unicode character');
   for (const digit of '1F680') follow(digit);
-  follow('Append Unicode character'); follow('Done');
+  follow('Append Unicode character'); follow('Back to all tokens');
+  for (const label of ['https://', 'a', 'Z', '7', '&', '{"', 'Content-Type']) find(html, label);
+  follow('Done');
   follow('Edit body'); follow('Backspace'); follow('Cancel editing'); // Cancel restores the rocket too.
   follow('Edit headers'); follow('Clear field'); follow('Cancel editing');
   follow('Edit timeout'); follow('Set 5000 ms'); follow('Done');

@@ -70,11 +70,13 @@ https://get2post.vercel.app/api/post?url=https%3A%2F%2Fhttpbin.org%2Fpost&data=%
 Start at https://get2post.vercel.app/builder if you can fetch pages and follow
 links but cannot enter text or submit forms. Every edit is a normal hyperlink;
 no JavaScript, cookies, or session is required. Follow Edit destination, then
-use Common URL fragments, Letters, Uppercase letters, Numbers, or Symbols.
+use the URL fragments, letters, uppercase letters, numbers, symbols, JSON
+fragments, and header fragments shown together on every editing page.
 Done saves a draft; Cancel editing restores the saved field. Use Backspace,
 Clear field, and Start over as needed. Edit body and headers independently;
-JSON fragments and Header fragments reduce typing. Unicode character lets you
-enter a hexadecimal code point and append the resulting character. Headers
+JSON fragments and Header fragments reduce typing. Only Unicode character opens
+a separate page: enter a hexadecimal code point and append the resulting
+character, then use Back to all tokens to return. Headers
 remain JSON text while editing; review validates the completed object.
 
 Change response mode selects json or raw. Edit timeout offers presets and digit
