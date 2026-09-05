@@ -2,10 +2,14 @@
 
 A public GET-to-POST converter with a documented request builder. Built with a static frontend and a Node.js Vercel Function. Owned by Tyler Tracy; personal GitHub account `tylerthecoder` and Vercel team `tyler-tracys-projects`.
 
+Live app and documentation: https://get-to-post-eight.vercel.app
+
+Private repository: https://github.com/tylerthecoder/get-to-post
+
 ## Use
 
 ```sh
-curl --get 'https://YOUR-DEPLOYMENT.vercel.app/api/post' \
+curl --get 'https://get-to-post-eight.vercel.app/api/post' \
   --data-urlencode 'url=https://httpbin.org/post' \
   --data-urlencode 'data={"message":"Hello"}' \
   --data-urlencode 'headers={"Content-Type":"application/json"}'
