@@ -22,7 +22,7 @@
       <p>Neon and Vercel process request data to operate the service, subject to their own access controls. Request URLs contain your body and headers and may also appear in Vercel logs, client history, or shared links. Redaction in the Neon log does not remove those other copies. Common credential fields are redacted, but nested values and unusual field names can be missed; text/XML bodies are retained verbatim.</p>
       <p class="hint">The public source documents the implementation; it cannot prove deployed permissions, exclusive access, or my sharing decisions. <a href="/llms.txt#logging">Logging details</a> · <a href="https://github.com/tylerthecoder/get-to-post/blob/main/lib/request-log.js">Inspect the logging code ↗</a></p>
     </aside>
-    <section class="agent-start" aria-labelledby="agent-title"><div class="section-top"><h2 id="agent-title">Agent quick start</h2><a href="/llms.txt">Plain-text guide</a></div><p>No JavaScript needed. Send this GET; read the upstream status and body from the JSON response.</p><pre tabindex="0">curl --get 'https://get2post.vercel.app/api/post' \
+    <section class="agent-start" aria-labelledby="agent-title"><div class="section-top"><h2 id="agent-title">Agent quick start</h2><a href="/llms.txt">Plain-text guide</a></div><p>No JavaScript needed. Use /api/post on this page’s current origin. The example below uses the public domain; substitute this page’s origin if different. Read the upstream status and body from the JSON response.</p><pre tabindex="0">curl --get 'https://www.postviaget.com/api/post' \
   --data-urlencode 'url=https://httpbin.org/post' \
   --data-urlencode 'data={"message":"Hello from an AI agent"}' \
   --data-urlencode 'headers={"Content-Type":"application/json"}' \

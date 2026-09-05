@@ -4,16 +4,16 @@
 
 A GET-to-POST converter for AI agents with GET-only tools, with a static documentation homepage. Built with a static frontend, a Node.js Vercel Function, and private Neon request logs. Owned by Tyler Tracy; personal GitHub account `tylerthecoder` and Vercel team `tyler-tracys-projects`.
 
-Live app and documentation: https://get2post.vercel.app
+Live app and documentation: https://www.postviaget.com
 
-Plain-text agent guide: https://get2post.vercel.app/llms.txt
+Plain-text agent guide: https://www.postviaget.com/llms.txt
 
 Public repository: https://github.com/tylerthecoder/get-to-post
 
 ## Use
 
 ```sh
-curl --get 'https://get2post.vercel.app/api/post' \
+curl --get 'https://www.postviaget.com/api/post' \
   --data-urlencode 'url=https://httpbin.org/post' \
   --data-urlencode 'data={"message":"Hello"}' \
   --data-urlencode 'headers={"Content-Type":"application/json"}'
@@ -25,7 +25,9 @@ Raw mode preserves upstream status and body bytes, returning safe content types 
 
 ## Link-only builder
 
-Open [/builder](https://get2post.vercel.app/builder) to construct a request using only page retrieval and ordinary hyperlinks. Destination, body, headers, response mode, and timeout can be edited independently. Every editing page shows URL/JSON/header fragments, lowercase and uppercase letters, digits, punctuation, and whitespace together. Only the Unicode code-point composer opens a separate page. Done saves a draft; Cancel editing restores the original field.
+Builder navigation and execution URLs are origin-relative: `/api/post` resolves on the same scheme, hostname, and port as the current builder page, including custom domains and local development. Agents should keep the origin from which they fetched the guide or builder after redirects.
+
+Open [/builder](https://www.postviaget.com/builder) to construct a request using only page retrieval and ordinary hyperlinks. Destination, body, headers, response mode, and timeout can be edited independently. Every editing page shows URL/JSON/header fragments, lowercase and uppercase letters, digits, punctuation, and whitespace together. Only the Unicode code-point composer opens a separate page. Done saves a draft; Cancel editing restores the original field.
 
 Navigation encodes `{v:1, fields:[url, data, headers, response, timeout], edit:null | [fieldIndex, draft, unicodeHex]}` as base64url JSON in `state`. All field values are strings, including header JSON so incomplete edits are possible. Optional `view` selects the screen; `group=unicode` opens the Unicode composer. Older links naming other groups still work and now show all standard tokens together. Every request validates the state shape, encoding, and URL size. There are no sessions, cookies, forms, scripts, redirects, or database writes in the builder.
 

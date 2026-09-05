@@ -18,6 +18,23 @@ const find = (html, label) => {
 const requestState = (fields, edit = null) => ({ v: 1, fields: ['https://example.org/post', '', '{}', 'json', '15000'].map((value, i) => fields[i] ?? value), edit });
 const stateUrl = (state, view = 'review', group = 'url') => `/builder?${new URLSearchParams({ state: Buffer.from(JSON.stringify(state)).toString('base64url'), view, group })}`;
 
+test('builder navigation and execution stay on the current origin', () => {
+  const reviewPath = stateUrl(requestState({ 1: '{"message":"hello"}' }));
+  for (const origin of ['https://postviaget.com', 'https://www.postviaget.com', 'https://get2post.vercel.app', 'http://127.0.0.1:3000']) {
+    const pageUrl = new URL(reviewPath, origin);
+    const { html, status } = renderBuilder(pageUrl.pathname + pageUrl.search);
+    assert.equal(status, 200);
+    assert.doesNotMatch(html, /<base\b/i);
+    const execute = new URL(find(html, 'Execute request'), pageUrl);
+    assert.equal(execute.origin, origin);
+    assert.equal(execute.pathname, '/api/post');
+    assert.equal(execute.searchParams.get('data'), '{"message":"hello"}');
+    for (const label of ['Edit request', 'Start over', 'Agent instructions ↗']) {
+      assert.equal(new URL(find(html, label), pageUrl).origin, origin);
+    }
+  }
+});
+
 test('a link-only client constructs the acceptance request; only final execution posts and logs', async (t) => {
   const sent = []; const logged = [];
   const post = createHandler(async (config) => {
