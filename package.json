@@ -1,0 +1,13 @@
+{
+  "name": "get-to-post",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "test": "node --test",
+    "build": "node --check api/post.js && node --check lib/proxy.js && node --check public/app.js"
+  },
+  "dependencies": { "ipaddr.js": "2.4.0" }
+}
