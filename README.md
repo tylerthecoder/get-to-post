@@ -67,10 +67,6 @@ lets you edit each field and review the request before executing it.
 - The hosted service has no application-level rate limit or availability guarantee.
   Use it only for actions your user has authorized.
 
-Reading the homepage, agent reference, or builder does not send a POST. Executing
-an API URL does. Check your tool's URL and network restrictions; compatibility with
-every AI browsing tool is not guaranteed.
-
 ## Development
 
 Requires Node.js 24, matching the Vercel runtime.
