@@ -25,12 +25,6 @@ Neon and Vercel process request data to operate the service. Database access dep
 on account permissions, credentials, and authorized tools or people; there is no
 public log viewer or log-reading API.
 
-**Do not put sensitive data in request URLs.** URLs can appear in client history,
-infrastructure logs, and shared links. Common credential fields are redacted from
-the application log, but arbitrary secrets cannot reliably be identified; text and
-XML bodies are retained verbatim. See the [full disclosure](https://get2post.vercel.app/#logging-title)
-before using the service.
-
 ## Quick start
 
 ```sh
