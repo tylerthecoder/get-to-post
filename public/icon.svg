@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 96 96">
+  <defs>
+    <linearGradient id="tile" x1="8" y1="0" x2="88" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#244b3e"/>
+      <stop offset="1" stop-color="#0b211b"/>
+    </linearGradient>
+    <linearGradient id="post" x1="55" y1="26" x2="83" y2="73" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e3ffa6"/>
+      <stop offset="1" stop-color="#a9e86e"/>
+    </linearGradient>
+  </defs>
+  <rect width="96" height="96" rx="25" fill="url(#tile)"/>
+  <rect x=".75" y=".75" width="94.5" height="94.5" rx="24.25" fill="none" stroke="#9fc98b" stroke-opacity=".25" stroke-width="1.5"/>
+  <!-- A right-facing arrow is cut into the P's counter, pointing from G to P. -->
+  <path d="M45 30c-4-4-8-6-14-6-12 0-19 10-19 24s7 24 20 24c7 0 13-3 17-8V45H31v10h8v5c-2 2-4 3-7 3-7 0-10-6-10-15s3-15 10-15c3 0 5 1 7 4Z" fill="#f1f5e8"/>
+  <path d="M54 72V24h15c11 0 18 7 18 18s-7 18-18 18h-5v12Z" fill="url(#post)"/>
+  <path d="M64 33v5H49v9h15v5l13-10Z" fill="#102a21"/>
+</svg>
