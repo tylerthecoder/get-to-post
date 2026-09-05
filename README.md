@@ -1,4 +1,4 @@
-<img src="public/icon.svg" alt="GET to POST icon" width="64" height="64">
+<img src="public/icon.svg" alt="GP monogram with an arrow from G to P" width="64" height="64">
 
 # GET → POST
 
@@ -101,7 +101,7 @@ The homepage contains the disclosure, curl quick start, and API reference withou
 
 ## Project icon
 
-`public/icon.svg` is the editable source for the header icon and SVG favicon. The ICO contains 16, 32, and 64 pixel versions; the Apple touch icon is 180 pixels. Regenerate with librsvg (`rsvg-convert`) and ImageMagick after changing the SVG:
+The custom GP monogram pairs a cream G with a lime P; a right-pointing arrow is cut into the P to represent conversion. `public/icon.svg` is the editable source for the header icon and SVG favicon. The ICO contains 16, 32, and 64 pixel versions; the Apple touch icon is 180 pixels. Regenerate with librsvg (`rsvg-convert`) and ImageMagick after changing the SVG:
 
 ```sh
 rsvg-convert -w 256 -h 256 public/icon.svg -o /tmp/get2post-icon-master.png
