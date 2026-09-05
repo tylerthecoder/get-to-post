@@ -3,11 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": "24.x" },
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "test": "node --test",
-    "build": "node --check api/post.js && node --check lib/proxy.js && node --check public/app.js"
+    "build": "node --check api/post.js && node --check lib/proxy.js && node --check lib/request-log.js && node --check public/app.js",
+    "db:setup": "node scripts/setup-db.mjs",
+    "test:db": "node scripts/verify-db.mjs"
   },
-  "dependencies": { "ipaddr.js": "2.4.0" }
+  "dependencies": {
+    "@neondatabase/serverless": "1.1.0",
+    "ipaddr.js": "2.4.0"
+  }
 }

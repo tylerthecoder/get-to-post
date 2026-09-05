@@ -2,3 +2,5 @@
 test
 scripts
 README.md
+db
+.env*
