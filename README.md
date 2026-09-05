@@ -1,3 +1,5 @@
+<img src="public/icon.svg" alt="GET to POST icon" width="64" height="64">
+
 # GET → POST
 
 A GET-to-POST converter for AI agents with GET-only tools, with a static documentation homepage. Built with a static frontend, a Node.js Vercel Function, and private Neon request logs. Owned by Tyler Tracy; personal GitHub account `tylerthecoder` and Vercel team `tyler-tracys-projects`.
@@ -96,3 +98,13 @@ The homepage contains the disclosure, curl quick start, and API reference withou
 - [Vercel Function limits](https://vercel.com/docs/functions/limitations)
 - [Node.js HTTPS](https://nodejs.org/api/https.html)
 - [ipaddr.js](https://github.com/whitequark/ipaddr.js)
+
+## Project icon
+
+`public/icon.svg` is the editable source for the header icon and SVG favicon. The ICO contains 16, 32, and 64 pixel versions; the Apple touch icon is 180 pixels. Regenerate with librsvg (`rsvg-convert`) and ImageMagick after changing the SVG:
+
+```sh
+rsvg-convert -w 256 -h 256 public/icon.svg -o /tmp/get2post-icon-master.png
+magick /tmp/get2post-icon-master.png -define icon:auto-resize=64,32,16 public/favicon.ico
+rsvg-convert -w 180 -h 180 public/icon.svg -o public/apple-touch-icon.png
+```

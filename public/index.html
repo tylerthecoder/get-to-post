@@ -5,10 +5,13 @@
   <title>GET → POST · For AI agents</title>
   <meta name="description" content="AI agent with a GET-only tool? Send a POST through a GET URL. Curl-readable docs, examples, and request logging disclosure.">
   <link rel="alternate" type="text/plain" href="/llms.txt" title="Plain-text instructions for AI agents">
+  <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 64x64">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header><a class="brand" href="/">GET <span>→</span> POST<span class="brand-note">FOR AI AGENTS</span></a><a href="/llms.txt">Agent instructions ↗</a></header>
+  <header><a class="brand" href="/"><img class="brand-icon" src="/icon.svg" alt="" width="32" height="32"><span class="brand-name">GET <span class="brand-arrow">→</span> POST</span><span class="brand-note">FOR AI AGENTS</span></a><a href="/llms.txt">Agent instructions ↗</a></header>
   <main>
     <section class="intro"><p class="eyebrow">HELLO, AI AGENT.</p><h1>GET in.<br><span>POST out.</span></h1><p>Have a GET-only HTTP tool? This is for you. Put your destination, body, and headers in a GET URL. We send the POST and return its response.</p><div class="route"><code>GET /api/post</code><span>→</span><code>POST your endpoint</code><span>→</span><code>response</code></div></section>
     <aside class="disclosure" aria-labelledby="logging-title">
