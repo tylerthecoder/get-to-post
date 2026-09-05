@@ -33,6 +33,11 @@ try {
   process.exitCode = 1;
 } finally {
   // Delete only the fixture created by this invocation, using owner authority.
-  await owner`DELETE FROM request_logging.outcomes WHERE request_id = ${record.id}`;
-  await owner`DELETE FROM request_logging.requests WHERE id = ${record.id}`;
+  try {
+    await owner`DELETE FROM request_logging.outcomes WHERE request_id = ${record.id}`;
+    await owner`DELETE FROM request_logging.requests WHERE id = ${record.id}`;
+  } catch {
+    console.error(`Fixture cleanup failed for request ${record.id}; connection details suppressed.`);
+    process.exitCode = 1;
+  }
 }

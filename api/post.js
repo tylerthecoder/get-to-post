@@ -24,7 +24,7 @@ export function createHandler(send = postUpstream, logger = requestLogger) {
           await logger.finish(record.id, {
             httpStatus: res.statusCode, upstreamStatus, errorCode,
             durationMs: Math.round(performance.now() - started),
-            responseBytes: body ? Buffer.byteLength(body) : 0,
+            responseBytes: req.method === 'HEAD' || [204, 304].includes(res.statusCode) ? 0 : body ? Buffer.byteLength(body) : 0,
           });
           res.setHeader('X-Request-Log-Status', 'complete');
         } catch {

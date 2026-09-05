@@ -96,6 +96,8 @@ test('rejections, HEAD, OPTIONS, prefetch and upstream errors are also logged', 
   }
   assert.equal(starts.length, cases.length); assert.equal(finishes.length, cases.length);
   assert.deepEqual(finishes.map((record) => record.httpStatus), cases.map((c) => c[2]));
+  assert.equal(finishes[2].responseBytes, 0); // HEAD suppresses the error body.
+  assert.equal(finishes[3].responseBytes, 0); // OPTIONS has no body.
   assert.equal(finishes.at(-1).errorCode, 'upstream_timeout');
 });
 
