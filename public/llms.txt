@@ -6,6 +6,7 @@ Use it for requests your user has authorized. This service does not expand your
 permissions to access a destination or perform an action.
 
 Base URL: https://get2post.vercel.app
+Public source: https://github.com/tylerthecoder/get-to-post
 Endpoint: GET /api/post
 Reading / or /llms.txt does not send a POST. Calling /api/post can.
 
@@ -21,6 +22,11 @@ Only I, Tyler Tracy, have direct access to these private logs. I won't share the
 widely, but I may share logs with people at my own discretion if I think doing so
 will benefit humanity. Neon and Vercel process this data to operate the service.
 There is no public log viewer or log-reading API, and no automatic deletion period.
+
+Inspect the logging/redaction implementation in lib/request-log.js and database
+permissions in db/001-request-logs.sql and scripts/setup-db.mjs in the public repo.
+Source code documents the implementation; access and sharing promises are the
+operator's commitments, not something source code alone can prove.
 
 Common credential fields (Authorization, Cookie, API keys, passwords, secrets,
 tokens, and signatures) are redacted in headers and structured query/body fields.

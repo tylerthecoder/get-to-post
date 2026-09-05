@@ -4,9 +4,9 @@ A GET-to-POST converter for AI agents with GET-only tools, with a browser reques
 
 Live app and documentation: https://get2post.vercel.app
 
-Plain-text agent guide: https://get2post.vercel.app/llms.txt (introduced by this PR)
+Plain-text agent guide: https://get2post.vercel.app/llms.txt
 
-Private repository: https://github.com/tylerthecoder/get-to-post
+Public repository: https://github.com/tylerthecoder/get-to-post
 
 ## Use
 
@@ -50,7 +50,7 @@ The homepage and `/llms.txt` disclose logging before the examples: only Tyler ha
 
 ## Database setup and owner access
 
-1. Create an isolated Neon database in Tyler's personal account. The existing installation uses Launch; preserve that plan. The PR preview database is `get2post_individual_sub-request-logs_preview_kill-2026-10-05` in `iad1`. Its date is a review/cleanup marker, **not an automatic deletion job**.
+1. Create an isolated Neon database in Tyler's personal account. The existing installation uses Launch; preserve that plan. The production database is `get2post_individual_sub-request-logs_production_kill-2026-10-05`; the separate preview database is `get2post_individual_sub-request-logs_preview_kill-2026-10-05`. Both are in `iad1`. Their dates are review/cleanup markers, **not automatic deletion jobs**.
 2. Pull the owner connection into an ignored, mode-0600 local environment file with the provider's authenticated CLI. Keep it out of chat, arguments, source, and CI logs.
 3. Initialize the schema and dedicated runtime role:
 
@@ -60,7 +60,7 @@ The homepage and `/llms.txt` disclose logging before the examples: only Tyler ha
    ```
 
    Setup runs checked-in DDL and creates `get2post_log_writer`. It writes an exclusive mode-0600 credential file and refuses to silently rotate an existing role. If interrupted, inspect the role/output file before retrying. Verification creates a fixture, reads it as owner, checks denied runtime operations, and removes only that fixture.
-4. Disconnect the integration resource from the app to remove its broad owner/password variables (the database remains). Add **only** `REQUEST_LOG_DATABASE_URL` as a sensitive Vercel variable, passing the value via stdin from the private file. The PR scopes it to Preview and branch `codex/neon-request-logs`. Never deploy the owner URL, even under an unused name.
+4. Disconnect the integration resource from the app to remove its broad owner/password variables (the database remains). Add **only** `REQUEST_LOG_DATABASE_URL` as a sensitive Vercel variable, passing the value via stdin from the private file. Production uses its dedicated database; Preview branch `codex/neon-request-logs` uses the separate preview database. Never deploy the owner URL, even under an unused name.
 5. Keep the provider's private stores as the credential source of truth; remove temporary local setup files after verification. Inspect logs in Neon's authenticated SQL editor:
 
    ```sql
@@ -71,13 +71,11 @@ The homepage and `/llms.txt` disclose logging before the examples: only Tyler ha
    ORDER BY r.received_at DESC LIMIT 100;
    ```
 
-## Approval and launch
+## Deployment
 
-This PR does **not** configure production or enable production logging. Its protected Vercel preview uses synthetic verification traffic.
+Tyler approved publishing the repository and launching request logging. Merges to `main` deploy to production through Vercel. Production requires its own insert-only `REQUEST_LOG_DATABASE_URL`; missing credentials make API calls return 503. Keep previews separate from production logs.
 
-1. Review the logging scope and sharing disclosure.
-2. After explicit launch approval, initialize a production database and insert-only role with the same migration; set `REQUEST_LOG_DATABASE_URL` in **Production**. Keep other previews separate from production logs.
-3. Merge/deploy the approved revision. Verify a synthetic API call is recorded and the public disclosure is served. **Merging without the production credential will make API calls return 503.**
+To view logs, open the production database in the personal Vercel team's Storage dashboard, choose **Open in Neon**, and use **SQL Editor** with the owner role. Run the query above, or use [`db/read-logs.sql`](db/read-logs.sql) to include request headers and identify incomplete outcomes. The tables are `request_logging.requests` and `request_logging.outcomes` in `neondb`. No logs are published in this repository.
 
 The HTML contains the disclosure and complete curl/JavaScript examples before any JavaScript runs. `/llms.txt` contains the same policy and full agent-oriented API reference.
 
