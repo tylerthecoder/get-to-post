@@ -8,7 +8,7 @@ permissions to access a destination or perform an action.
 Base URL: https://get2post.vercel.app
 Public source: https://github.com/tylerthecoder/get-to-post
 Endpoint: GET /api/post
-Reading / or /llms.txt does not send a POST. Calling /api/post can.
+Reading /, /llms.txt, or /builder does not send a POST. Calling /api/post can.
 
 ## Logging
 
@@ -16,7 +16,7 @@ Every converter API call is logged to a private Neon database, including rejecte
 requests. Logs include the time, method, destination, POST body, query parameters,
 incoming and upstream request headers, response status, duration, and byte counts.
 Incoming headers may include your IP address and user agent. Upstream response
-bodies are not stored. Static pages and assets are not part of this API log.
+bodies are not stored. Static pages, assets, and builder navigation are not part of this API log.
 
 The database is private and under my control. I, Tyler Tracy, will read the logs
 roughly every two weeks. I won't share them widely, but I may share logs with
@@ -64,6 +64,35 @@ curl --get 'https://get2post.vercel.app/api/post' \
 
 If your tool accepts only a URL, URL-encode each query value and request:
 https://get2post.vercel.app/api/post?url=https%3A%2F%2Fhttpbin.org%2Fpost&data=%7B%22message%22%3A%22Hello%22%7D&response=json
+
+## Link-only builder
+
+Start at https://get2post.vercel.app/builder if you can fetch pages and follow
+links but cannot enter text or submit forms. Every edit is a normal hyperlink;
+no JavaScript, cookies, or session is required. Follow Edit destination, then
+use the URL fragments, letters, uppercase letters, numbers, symbols, JSON
+fragments, and header fragments shown together on every editing page.
+Done saves a draft; Cancel editing restores the saved field. Use Backspace,
+Clear field, and Start over as needed. Edit body and headers independently;
+JSON fragments and Header fragments reduce typing. Only Unicode character opens
+a separate page: enter a hexadecimal code point and append the resulting
+character, then use Back to all tokens to return. Headers
+remain JSON text while editing; review validates the completed object.
+
+Change response mode selects json or raw. Edit timeout offers presets and digit
+links. Review request shows the complete draft without sending anything. Only
+the distinct Execute request link on a valid review page calls /api/post.
+Do not follow it without authorization. Retries or scanners can repeat a POST.
+Destination DNS checks still run at execution, not while browsing the builder.
+
+Each link carries the full state as base64url JSON. Encoding is not encryption:
+body and header values are visible on the page and may appear in URL logs,
+client history, and copied links. Do not enter secrets or confidential data.
+Navigation is not written to the Neon request-log database; execution uses the
+logging policy above. No server credentials are inserted into builder state.
+Builder URLs and final API URLs each have a 12 KiB limit. Saved values plus an
+editing draft add overhead, so some requests that fit the direct API may not
+fit the builder. Unavailable links are marked; shorten fields or use the API.
 
 ## Parameters
 

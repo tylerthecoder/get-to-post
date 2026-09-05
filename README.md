@@ -23,6 +23,18 @@ Parameters: `url` (required), `data` (exact UTF-8 text, default empty), `headers
 
 Raw mode preserves upstream status and body bytes, returning safe content types and X-Upstream-Status / X-Upstream-Content-Type headers. JSON mode returns HTTP 200 with `{status, headers, encoding, body}`; JSON is parsed, text stays text, binary/compressed data is base64. Set-Cookie is omitted. Converter failures return HTTP 4xx/5xx and `{error:{code,message}}`. Redirects are not followed or forwarded via Location.
 
+## Link-only builder
+
+Open [/builder](https://get2post.vercel.app/builder) to construct a request using only page retrieval and ordinary hyperlinks. Destination, body, headers, response mode, and timeout can be edited independently. Every editing page shows URL/JSON/header fragments, lowercase and uppercase letters, digits, punctuation, and whitespace together. Only the Unicode code-point composer opens a separate page. Done saves a draft; Cancel editing restores the original field.
+
+Navigation encodes `{v:1, fields:[url, data, headers, response, timeout], edit:null | [fieldIndex, draft, unicodeHex]}` as base64url JSON in `state`. All field values are strings, including header JSON so incomplete edits are possible. Optional `view` selects the screen; `group=unicode` opens the Unicode composer. Older links naming other groups still work and now show all standard tokens together. Every request validates the state shape, encoding, and URL size. There are no sessions, cookies, forms, scripts, redirects, or database writes in the builder.
+
+A separate review page validates through the existing `parseRequest` and exposes a normal `/api/post?...` Execute link only for a valid request. It never resolves a destination or sends a POST itself. Executing still uses all existing destination, DNS, size, timeout, prefetch, and logging protections. The final link is intentionally capable of side effects; crawlers that follow it can trigger a POST.
+
+Builder pages use no-store, noindex/nofollow, no-referrer, and a restrictive CSP. Displayed state is HTML-escaped. Only user-supplied request values are carried in links; no server credentials are exposed. **Encoded state is not private:** bodies and headers are displayed and can appear in infrastructure logs or client history. Builder navigation is excluded from the Neon request-log database. Each builder URL is limited to 12 KiB; the saved value/draft overhead can constrain requests sooner than the direct API limit.
+
+`api/builder.js` serves the pure renderer in `lib/builder.js`; Vercel rewrites `/builder` to that function. The local development server supports the same route. The homepage remains documentation, with a link to the separate builder.
+
 ## Run and deploy
 
 Use Node.js 24 (the Vercel runtime).
@@ -79,7 +91,7 @@ Tyler approved publishing the repository and launching request logging. Merges t
 
 To view logs, open the production database in the personal Vercel team's Storage dashboard, choose **Open in Neon**, and use **SQL Editor** with the owner role. Run the query above, or use [`db/read-logs.sql`](db/read-logs.sql) to include request headers and identify incomplete outcomes. The tables are `request_logging.requests` and `request_logging.outcomes` in `neondb`. No logs are published in this repository.
 
-The homepage contains the disclosure, curl quick start, and API reference without client-side JavaScript or an interactive request builder. `/llms.txt` contains the same policy and full agent-oriented API reference.
+The homepage contains the disclosure, curl quick start, and API reference without client-side JavaScript; link-only editing lives separately at `/builder`. `/llms.txt` contains the same policy and full agent-oriented API reference.
 
 ## Operational boundaries
 

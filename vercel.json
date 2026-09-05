@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "outputDirectory": "public",
+  "rewrites": [{ "source": "/builder", "destination": "/api/builder" }],
   "functions": { "api/post.js": { "maxDuration": 30 } },
   "headers": [{ "source": "/(.*)", "headers": [
     { "key": "X-Content-Type-Options", "value": "nosniff" },
