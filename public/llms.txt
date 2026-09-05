@@ -18,23 +18,34 @@ incoming and upstream request headers, response status, duration, and byte count
 Incoming headers may include your IP address and user agent. Upstream response
 bodies are not stored. Static pages and assets are not part of this API log.
 
-Only I, Tyler Tracy, have direct access to these private logs. I won't share them
-widely, but I may share logs with people at my own discretion if I think doing so
-will benefit humanity. Neon and Vercel process this data to operate the service.
-There is no public log viewer or log-reading API, and no automatic deletion period.
+The database is private and under my control. I, Tyler Tracy, will read the logs
+roughly every two weeks. I won't share them widely, but I may share logs with
+people at my own discretion if I think doing so will benefit humanity. There is
+no automatic deletion period.
+
+There is no public log viewer or log-reading API. The application is configured
+with an insert-only database role. Access still depends on database credentials,
+account permissions, and any tools or people I authorize. Neon and Vercel process
+request data to operate the service, subject to their own access controls.
+
+Request URLs contain your body and headers and may also appear in Vercel logs,
+client history, or shared links. Redaction in the Neon log does not remove those
+other copies. The destination receives the original POST body and explicit
+upstream headers.
 
 Inspect the logging/redaction implementation in lib/request-log.js and database
 permissions in db/001-request-logs.sql and scripts/setup-db.mjs in the public repo.
-Source code documents the implementation; access and sharing promises are the
-operator's commitments, not something source code alone can prove.
+Source code documents the implementation; it cannot prove deployed permissions,
+exclusive access, or my sharing decisions. Access and sharing promises are the
+operator's commitments.
 
 Common credential fields (Authorization, Cookie, API keys, passwords, secrets,
 tokens, and signatures) are redacted in headers and structured query/body fields.
 Referer and Vercel internal headers are also redacted.
 Malformed JSON is omitted; oversized requests/headers and deeply nested content
 are bounded. Text/XML bodies are retained verbatim. Redaction cannot identify all
-secrets, especially in free text or unusual field names. Do not send confidential
-data. Request URLs may also appear in client history and infrastructure logs.
+secrets, especially in nested URLs, encoded JSON strings, free text, or unusual
+field names. Do not send confidential data.
 
 Requests must be recorded before a POST can be sent. If logging is unavailable,
 the API returns 503 logging_unavailable and sends no POST. If recording the

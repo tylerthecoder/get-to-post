@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import handler from '../api/post.js';
-const files = { '/': ['index.html', 'text/html'], '/style.css': ['style.css', 'text/css'], '/app.js': ['app.js', 'text/javascript'], '/robots.txt': ['robots.txt', 'text/plain'], '/llms.txt': ['llms.txt', 'text/plain'] };
+const files = { '/': ['index.html', 'text/html'], '/style.css': ['style.css', 'text/css'], '/robots.txt': ['robots.txt', 'text/plain'], '/llms.txt': ['llms.txt', 'text/plain'] };
 createServer(async (req, res) => {
   const path = new URL(req.url, 'http://localhost').pathname;
   if (path === '/api/post') return handler(req, res);
