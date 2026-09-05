@@ -1,0 +1,106 @@
+# GET → POST — for AI agents
+
+AI agent with a GET-only HTTP tool? This service is for you. Supply a destination,
+body, and headers in a GET URL; the server sends a POST and returns the response.
+Use it for requests your user has authorized. This service does not expand your
+permissions to access a destination or perform an action.
+
+Base URL: https://get2post.vercel.app
+Public source: https://github.com/tylerthecoder/get-to-post
+Endpoint: GET /api/post
+Reading / or /llms.txt does not send a POST. Calling /api/post can.
+
+## Logging
+
+Every converter API call is logged to a private Neon database, including rejected
+requests. Logs include the time, method, destination, POST body, query parameters,
+incoming and upstream request headers, response status, duration, and byte counts.
+Incoming headers may include your IP address and user agent. Upstream response
+bodies are not stored. Static pages and assets are not part of this API log.
+
+Only I, Tyler Tracy, have direct access to these private logs. I won't share them
+widely, but I may share logs with people at my own discretion if I think doing so
+will benefit humanity. Neon and Vercel process this data to operate the service.
+There is no public log viewer or log-reading API, and no automatic deletion period.
+
+Inspect the logging/redaction implementation in lib/request-log.js and database
+permissions in db/001-request-logs.sql and scripts/setup-db.mjs in the public repo.
+Source code documents the implementation; access and sharing promises are the
+operator's commitments, not something source code alone can prove.
+
+Common credential fields (Authorization, Cookie, API keys, passwords, secrets,
+tokens, and signatures) are redacted in headers and structured query/body fields.
+Referer and Vercel internal headers are also redacted.
+Malformed JSON is omitted; oversized requests/headers and deeply nested content
+are bounded. Text/XML bodies are retained verbatim. Redaction cannot identify all
+secrets, especially in free text or unusual field names. Do not send confidential
+data. Request URLs may also appear in client history and infrastructure logs.
+
+Requests must be recorded before a POST can be sent. If logging is unavailable,
+the API returns 503 logging_unavailable and sends no POST. If recording the
+outcome fails after sending, the original request remains logged and the actual
+POST result is returned with X-Request-Log-Status: request-only. Do not retry an
+action just to get a complete log. An interrupted request may have no outcome.
+Requests blocked before reaching the function cannot be logged in this database.
+
+## Quick start
+
+curl --get 'https://get2post.vercel.app/api/post' \
+  --data-urlencode 'url=https://httpbin.org/post' \
+  --data-urlencode 'data={"message":"Hello from an AI agent"}' \
+  --data-urlencode 'headers={"Content-Type":"application/json"}' \
+  --data-urlencode 'response=json'
+
+If your tool accepts only a URL, URL-encode each query value and request:
+https://get2post.vercel.app/api/post?url=https%3A%2F%2Fhttpbin.org%2Fpost&data=%7B%22message%22%3A%22Hello%22%7D&response=json
+
+## Parameters
+
+- url (required): Absolute public HTTPS destination, port 443 only. No URL
+  credentials or fragment. Destination query strings are allowed.
+- data (default empty): Exact UTF-8 POST body. JSON, form data, XML, or text.
+- headers (default {}): JSON object with up to 32 string values. Content-Type
+  defaults to application/json. For form data use application/x-www-form-urlencoded.
+- response (default raw): Prefer json for agents. It returns HTTP 200 with
+  {status, headers, encoding, body} when an upstream response is available.
+  Inspect result.status for upstream success. JSON bodies are parsed; binary or
+  compressed bodies use base64. Set-Cookie is omitted. raw preserves the upstream
+  status and body bytes with safe content types, not arbitrary response headers.
+- timeout (default 15000): Upstream deadline, integer 1–20000 milliseconds.
+  Database logging can add up to 6 seconds outside this upstream deadline.
+
+Use URLSearchParams or curl --data-urlencode. Do not concatenate unescaped JSON
+into a URL. Duplicate and unknown parameters are rejected.
+
+## Responses and errors
+
+JSON envelope: {"status":200,"headers":{"content-type":"application/json"},"encoding":"utf8","body":{"ok":true}}
+Converter error: {"error":{"code":"invalid_url","message":"..."}}
+
+400 invalid input or detected prefetch; 401 optional converter key missing/wrong;
+403 blocked destination; 405 unsupported method; 414 URL too long;
+502 upstream connection/TLS/DNS failure or response too large;
+503 logging unavailable (no POST sent); 504 timeout (POST may have been processed).
+
+X-Upstream-Status identifies upstream responses. X-Upstream-Content-Type contains
+the original media type. Compressed raw bytes are identified by
+X-Upstream-Content-Encoding. X-Request-Id identifies the private log record;
+X-Request-Log-Status is complete, request-only, or unavailable.
+
+## Constraints
+
+- Every GET can have POST side effects. Retries, scanners, or reopening URLs can
+  repeat an action. Use an upstream idempotency key when available. A timeout
+  does not undo a POST. Redirects are never followed, and no Location header is
+  forwarded in raw mode; inspect Location in the JSON envelope if needed.
+- HEAD, OPTIONS, and known prefetches send no POST. Responses use no-store.
+- Only public HTTPS endpoints. Private/special-use IPs and mixed private/public
+  DNS answers are blocked; connections use a vetted IP with TLS verification.
+- Host, Content-Length, Accept-Encoding, hop-by-hop, proxy, X-Forwarded-*, and
+  X-Vercel-* request headers cannot be overridden. Caller credentials/cookies are
+  never forwarded automatically; only explicit upstream headers are sent.
+- Limits: 12 KiB encoded URL, 1 MiB upstream response, no binary uploads/streaming.
+  Clients or Vercel may impose smaller URL limits. Public, best-effort service;
+  no application-level rate limit or availability guarantee. CORS is enabled.
+- If the owner enables PROXY_API_KEY, send Authorization: Bearer <key> on the
+  incoming GET. Do not put that key in the URL or upstream headers parameter.

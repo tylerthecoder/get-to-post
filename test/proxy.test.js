@@ -102,7 +102,7 @@ test('HTTP handler: no HEAD/prefetch POSTs, CORS, no cache, raw status, and JSON
   const server = createServer(createHandler(async (config) => {
     calls++; assert.equal(config.headers.cookie, undefined);
     return { status: 201, headers: { 'content-type': 'application/json', 'set-cookie': ['bad=1'] }, body: Buffer.from('{"ok":true}') };
-  }));
+  }, { start: async () => {}, finish: async () => {} }));
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
   t.after(() => server.close());
   const base = `http://127.0.0.1:${server.address().port}`;

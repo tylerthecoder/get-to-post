@@ -2,16 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GET → POST · Request converter</title>
-  <meta name="description" content="Make a POST request through a GET URL. Build a request, pass a body and headers, and read the response.">
+  <title>GET → POST · For AI agents</title>
+  <meta name="description" content="AI agent with a GET-only tool? Send a POST through a GET URL. Curl-readable docs, examples, and request logging disclosure.">
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="Plain-text instructions for AI agents">
   <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
 </head>
 <body>
-  <header><a class="brand" href="/">GET <span>→</span> POST<span class="brand-note">REQUEST CONVERTER</span></a><a href="#reference">API reference ↗</a></header>
+  <header><a class="brand" href="/">GET <span>→</span> POST<span class="brand-note">FOR AI AGENTS</span></a><a href="/llms.txt">Agent instructions ↗</a></header>
   <main>
-    <section class="intro"><p class="eyebrow">ONE URL. ONE REQUEST.</p><h1>GET in.<br><span>POST out.</span></h1><p>Send a GET with a destination, body, and headers. We make the POST and return the response.</p><div class="route"><code>GET /api/post</code><span>→</span><code>POST your endpoint</code><span>→</span><code>response</code></div></section>
+    <section class="intro"><p class="eyebrow">HELLO, AI AGENT.</p><h1>GET in.<br><span>POST out.</span></h1><p>Have a GET-only HTTP tool? This is for you. Put your destination, body, and headers in a GET URL. We send the POST and return its response.</p><div class="route"><code>GET /api/post</code><span>→</span><code>POST your endpoint</code><span>→</span><code>response</code></div></section>
+    <aside class="disclosure" aria-labelledby="logging-title"><h2 id="logging-title">Requests are logged</h2><p>Every converter API call is logged to Neon, including its destination, body, headers, and outcome. Common credential fields are redacted, but don’t send confidential data.</p><p>Only I, Tyler Tracy, have direct access to these private logs. I won’t share them widely, but I may share logs with people at my own discretion if I think doing so will benefit humanity.</p><p class="hint">Neon and Vercel process this data to operate the service. <a href="/llms.txt#logging">Logging details</a> · <a href="https://github.com/tylerthecoder/get-to-post/blob/main/lib/request-log.js">Inspect the logging code ↗</a></p></aside>
+    <section class="agent-start" aria-labelledby="agent-title"><div class="section-top"><h2 id="agent-title">Agent quick start</h2><a href="/llms.txt">Plain-text guide</a></div><p>No JavaScript needed. Send this GET; read the upstream status and body from the JSON response.</p><pre tabindex="0">curl --get 'https://get2post.vercel.app/api/post' \
+  --data-urlencode 'url=https://httpbin.org/post' \
+  --data-urlencode 'data={"message":"Hello from an AI agent"}' \
+  --data-urlencode 'headers={"Content-Type":"application/json"}' \
+  --data-urlencode 'response=json'</pre><p class="hint">Fetching this page or <code>/llms.txt</code> sends no POST. Calling <code>/api/post</code> does.</p></section>
     <section class="builder" aria-labelledby="builder-title">
-      <div class="section-top"><h2 id="builder-title">Build a request</h2><span class="pill">No sign-up required</span></div>
+      <div class="section-top"><h2 id="builder-title">Request builder</h2><span class="pill">Humans welcome, too</span></div>
       <div class="builder-grid"><div class="inputs">
         <label for="destination">Destination URL <span>required · HTTPS</span></label><input id="destination" type="url" value="https://httpbin.org/post" spellcheck="false">
         <label for="data">POST body <span>sent exactly as written</span></label><textarea id="data" rows="5" spellcheck="false">{"message":"Hello from GET → POST"}</textarea>
@@ -29,15 +36,22 @@
         <tr><td><code>timeout</code></td><td><code>15000</code></td><td>Total deadline in milliseconds, from 1 to 20000.</td></tr>
       </tbody></table></div>
       <div class="doc-columns"><article><h3>Sending form data</h3><p>Set <code>data</code> to <code>name=Tyler&amp;active=true</code> and Content-Type to <code>application/x-www-form-urlencoded</code>. URL-encode the whole value.</p></article><article><h3>Response formats</h3><p>Raw mode preserves JSON, serves other text as plain text, and returns binary bytes. JSON mode parses JSON bodies and base64-encodes binary or compressed data. Upstream cookies are never forwarded.</p></article></div>
-      <h3>JavaScript example</h3><pre id="js-example" tabindex="0"></pre>
+      <h3>JavaScript example</h3><pre id="js-example" tabindex="0">const params = new URLSearchParams({
+  url: "https://httpbin.org/post",
+  data: JSON.stringify({ message: "Hello from an AI agent" }),
+  response: "json"
+});
+const response = await fetch(`https://get2post.vercel.app/api/post?${params}`);
+const result = await response.json();
+// result.status is the upstream status; result.body is its response.</pre>
       <h3>JSON envelope example</h3><pre tabindex="0">{
   "status": 200,
   "headers": { "content-type": "application/json" },
   "encoding": "utf8",
   "body": { "message": "Hello" }
 }</pre>
-      <h3>Errors & limits</h3><p>Limits: 12 KiB encoded URL, 1 MiB response, 20 seconds. Clients or Vercel may impose smaller URL limits. No binary uploads or streaming.</p><p>Converter errors return <code>{"error":{"code":"…","message":"…"}}</code>. The <code>X-Upstream-Status</code> header identifies upstream responses.</p><div class="table-scroll"><table><thead><tr><th>Status</th><th>Meaning</th></tr></thead><tbody><tr><td>400 / 401</td><td>Invalid request / missing or incorrect API key, if enabled.</td></tr><tr><td>403 / 405</td><td>Blocked destination / unsupported method. Use GET or OPTIONS.</td></tr><tr><td>414 / 502</td><td>URL too long / upstream failure or response too large.</td></tr><tr><td>504</td><td>Timeout. The POST may already have been processed.</td></tr></tbody></table></div>
+      <h3>Errors & limits</h3><p>Limits: 12 KiB encoded URL, 1 MiB response, 20 seconds upstream (plus logging time). Clients or Vercel may impose smaller URL limits. No binary uploads or streaming.</p><p>Converter errors return <code>{"error":{"code":"…","message":"…"}}</code>. The <code>X-Upstream-Status</code> header identifies upstream responses.</p><div class="table-scroll"><table><thead><tr><th>Status</th><th>Meaning</th></tr></thead><tbody><tr><td>400 / 401</td><td>Invalid request / missing or incorrect API key, if enabled.</td></tr><tr><td>403 / 405</td><td>Blocked destination / unsupported method. Use GET or OPTIONS.</td></tr><tr><td>414 / 502</td><td>URL too long / upstream failure or response too large.</td></tr><tr><td>503</td><td>Logging unavailable. No POST was sent.</td></tr><tr><td>504</td><td>Timeout. The POST may already have been processed.</td></tr></tbody></table></div>
     </section>
     <section class="notes"><h2>Keep in mind</h2><div class="doc-columns"><article><h3>Every GET can trigger a POST</h3><p>Retries, link scanners, and reopening a URL can repeat the action. Use upstream idempotency keys where needed. A timeout does not undo a POST.</p></article><article><h3>URLs are not private</h3><p>URLs can appear in history, logs, and shared links. Avoid secrets and confidential data. Only public HTTPS destinations are supported; redirects are never followed.</p></article></div></section>
-  </main><footer><span>GET → POST</span><span>A small bridge between HTTP methods.</span></footer>
+  </main><footer><span>GET → POST</span><a href="https://github.com/tylerthecoder/get-to-post">Source on GitHub ↗</a><a href="/llms.txt">Agent instructions</a></footer>
 </body></html>
