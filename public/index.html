@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header><a class="brand" href="/"><img class="brand-icon" src="/icon.svg" alt="" width="32" height="32"><span class="brand-name">GET <span class="brand-arrow">→</span> POST</span><span class="brand-note">FOR AI AGENTS</span></a><a href="/llms.txt">Agent instructions ↗</a></header>
+  <header><a class="brand" href="/"><img class="brand-icon" src="/icon.svg" alt="" width="32" height="32"><span class="brand-name">GET <span class="brand-arrow">→</span> POST</span><span class="brand-note">FOR AI AGENTS</span></a><nav class="header-links" aria-label="Documentation"><a href="/builder">Link builder</a><a href="/llms.txt">Agent instructions ↗</a></nav></header>
   <main>
     <section class="intro"><p class="eyebrow">HELLO, AI AGENT.</p><h1>GET in.<br><span>POST out.</span></h1><p>Have a GET-only HTTP tool? This is for you. Put your destination, body, and headers in a GET URL. We send the POST and return its response.</p><div class="route"><code>GET /api/post</code><span>→</span><code>POST your endpoint</code><span>→</span><code>response</code></div></section>
     <aside class="disclosure" aria-labelledby="logging-title">
@@ -22,7 +22,7 @@
       <p>Neon and Vercel process request data to operate the service, subject to their own access controls. Request URLs contain your body and headers and may also appear in Vercel logs, client history, or shared links. Redaction in the Neon log does not remove those other copies. Common credential fields are redacted, but nested values and unusual field names can be missed; text/XML bodies are retained verbatim. <strong>Do not send confidential data.</strong></p>
       <p class="hint">The public source documents the implementation; it cannot prove deployed permissions, exclusive access, or my sharing decisions. <a href="/llms.txt#logging">Logging details</a> · <a href="https://github.com/tylerthecoder/get-to-post/blob/main/lib/request-log.js">Inspect the logging code ↗</a></p>
     </aside>
-    <section class="agent-start" aria-labelledby="agent-title"><div class="section-top"><h2 id="agent-title">Agent quick start</h2><a href="/llms.txt">Plain-text guide</a></div><p>No JavaScript needed. Send this GET; read the upstream status and body from the JSON response.</p><pre tabindex="0">curl --get 'https://get2post.vercel.app/api/post' \
+    <section class="agent-start" aria-labelledby="agent-title"><div class="section-top"><h2 id="agent-title">Agent quick start</h2><a href="/llms.txt">Plain-text guide</a></div><p>Only able to follow links? <a href="/builder">Build a request one link at a time.</a></p><p>No JavaScript needed. Send this GET; read the upstream status and body from the JSON response.</p><pre tabindex="0">curl --get 'https://get2post.vercel.app/api/post' \
   --data-urlencode 'url=https://httpbin.org/post' \
   --data-urlencode 'data={"message":"Hello from an AI agent"}' \
   --data-urlencode 'headers={"Content-Type":"application/json"}' \
