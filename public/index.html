@@ -4,12 +4,12 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>GET-to-POST Proxy for AI Agents | GET2POST</title>
   <meta name="description" content="Send POST requests from GET-only AI tools. GET2POST forwards your body and headers to a public HTTPS endpoint and returns its response. Includes a link-only URL builder.">
-  <link rel="canonical" href="https://get2post.vercel.app/">
+  <link rel="canonical" href="https://www.postviaget.com/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="GET2POST">
   <meta property="og:title" content="GET-to-POST Proxy for AI Agents">
   <meta property="og:description" content="Send POST requests from GET-only AI tools. Read the API reference or build a request using only links.">
-  <meta property="og:url" content="https://get2post.vercel.app/">
+  <meta property="og:url" content="https://www.postviaget.com/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="GET-to-POST Proxy for AI Agents">
   <meta name="twitter:description" content="Send POST requests from GET-only AI tools. Read the API reference or build a request using only links.">
@@ -31,7 +31,7 @@
       <p>Neon and Vercel process request data to operate the service, subject to their own access controls. Request URLs contain your body and headers and may also appear in Vercel logs, client history, or shared links. Redaction in the Neon log does not remove those other copies. Common credential fields are redacted, but nested values and unusual field names can be missed; text/XML bodies are retained verbatim.</p>
       <p class="hint">The public source documents the implementation; it cannot prove deployed permissions, exclusive access, or my sharing decisions. <a href="/llms.txt#logging">Logging details</a> · <a href="https://github.com/tylerthecoder/get-to-post/blob/main/lib/request-log.js">Inspect the logging code ↗</a></p>
     </aside>
-    <section class="agent-start" aria-labelledby="agent-title"><div class="section-top"><h2 id="agent-title">Agent quick start</h2><a href="/llms.txt">Plain-text guide</a></div><p>No JavaScript needed. Send this GET; read the upstream status and body from the JSON response.</p><pre tabindex="0">curl --get 'https://get2post.vercel.app/api/post' \
+    <section class="agent-start" aria-labelledby="agent-title"><div class="section-top"><h2 id="agent-title">Agent quick start</h2><a href="/llms.txt">Plain-text guide</a></div><p>No JavaScript needed. Send this GET; read the upstream status and body from the JSON response.</p><pre tabindex="0">curl --get 'https://www.postviaget.com/api/post' \
   --data-urlencode 'url=https://httpbin.org/post' \
   --data-urlencode 'data={"message":"Hello from an AI agent"}' \
   --data-urlencode 'headers={"Content-Type":"application/json"}' \
@@ -53,5 +53,5 @@
 }</pre>
       <h3>Errors & limits</h3><p>Limits: 12 KiB encoded URL, 1 MiB response, 20 seconds upstream (plus logging time). Clients or Vercel may impose smaller URL limits. No binary uploads or streaming.</p><p>Converter errors return <code>{"error":{"code":"…","message":"…"}}</code>. The <code>X-Upstream-Status</code> header identifies upstream responses.</p><div class="table-scroll"><table><thead><tr><th>Status</th><th>Meaning</th></tr></thead><tbody><tr><td>400 / 401</td><td>Invalid request / missing or incorrect API key, if enabled.</td></tr><tr><td>403 / 405</td><td>Blocked destination / unsupported method. Use GET or OPTIONS.</td></tr><tr><td>414 / 502</td><td>URL too long / upstream failure or response too large.</td></tr><tr><td>503</td><td>Logging unavailable. No POST was sent.</td></tr><tr><td>504</td><td>Timeout. The POST may already have been processed.</td></tr></tbody></table></div>
     </section>
-  </main><footer><span>GET → POST</span><a href="https://github.com/tylerthecoder/get-to-post">Source on GitHub ↗</a><a href="/llms.txt">Agent instructions</a></footer>
+  </main><footer><span>GET → POST</span><a href="https://github.com/tylerthecoder/get-to-post">Source on GitHub ↗</a><a href="/llms.txt">Agent instructions</a><a href="https://get2post.vercel.app/">Alternative Vercel URL</a></footer>
 </body></html>

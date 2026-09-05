@@ -1,6 +1,6 @@
 # Operations and maintenance
 
-Maintainer reference for the GET2POST deployment, request logging, and link-only builder. For usage and the API reference, see the [website](https://get2post.vercel.app). Shell commands assume the repository root.
+Maintainer reference for the GET2POST deployment, request logging, and link-only builder. For usage and the API reference, see the [website](https://www.postviaget.com). Shell commands assume the repository root.
 
 ## Run and deploy
 
@@ -102,7 +102,9 @@ Builder pages use no-store, noindex/nofollow, no-referrer, and a restrictive CSP
 ## Search discovery and measurement
 
 The homepage is the public documentation and canonical search landing page:
-`https://get2post.vercel.app/`. Its title, description, canonical link, and social
+`https://www.postviaget.com/`. The apex domain `https://postviaget.com/` redirects to this `www` address.
+The original `https://get2post.vercel.app/` address also works as an alternative.
+Its title, description, canonical link, and social
 metadata describe the GET-to-POST use case. `/sitemap.xml` lists only the homepage;
 `/llms.txt` is a linked alternative reference for agents, not a separate landing
 page or a guaranteed search ranking signal.
@@ -116,11 +118,11 @@ applicable group; a more specific group can override the wildcard group's rules.
 
 After deploying changes to production:
 
-1. Verify ownership of `https://get2post.vercel.app/` in
+1. Verify ownership of `https://www.postviaget.com/` in
    [Google Search Console](https://search.google.com/search-console) and
    [Bing Webmaster Tools](https://www.bing.com/webmasters/). Use the verification
    artifact issued by the provider; do not add placeholder verification tokens.
-2. Submit `https://get2post.vercel.app/sitemap.xml` in both accounts. Inspect the
+2. Submit `https://www.postviaget.com/sitemap.xml` in both accounts. Inspect the
    homepage's indexing status, selected canonical, and crawl errors. Confirm that
    the property is eligible for Google's generative AI search features.
 3. Check Vercel's firewall/bot settings for the production project. Documentation

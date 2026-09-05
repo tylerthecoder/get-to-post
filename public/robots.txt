@@ -2,4 +2,4 @@
 User-agent: *
 Disallow: /api/
 
-Sitemap: https://get2post.vercel.app/sitemap.xml
+Sitemap: https://www.postviaget.com/sitemap.xml

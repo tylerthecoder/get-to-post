@@ -9,9 +9,9 @@ body, and headers in a GET URL; the service sends the POST and returns the upstr
 response. The documentation is static HTML, and the optional URL builder works
 entirely through ordinary hyperlinks.
 
-[Website and API reference](https://get2post.vercel.app/) ·
-[Link-only URL builder](https://get2post.vercel.app/builder) ·
-[Plain-text agent reference](https://get2post.vercel.app/llms.txt)
+[Website and API reference](https://www.postviaget.com/) ·
+[Link-only URL builder](https://www.postviaget.com/builder) ·
+[Plain-text agent reference](https://www.postviaget.com/llms.txt)
 
 ## Privacy and request logging
 
@@ -28,7 +28,7 @@ public log viewer or log-reading API.
 ## Quick start
 
 ```sh
-curl --get 'https://get2post.vercel.app/api/post' \
+curl --get 'https://www.postviaget.com/api/post' \
   --data-urlencode 'url=https://httpbin.org/post' \
   --data-urlencode 'data={"message":"Hello"}' \
   --data-urlencode 'headers={"Content-Type":"application/json"}' \
@@ -49,7 +49,7 @@ with safe response content types. Converter failures return HTTP 4xx/5xx and
 | `timeout` | Upstream deadline, 1–20000 milliseconds | `15000` |
 
 URL-encode every parameter with `URLSearchParams` or `curl --data-urlencode`.
-For tools that can only follow links, the [builder](https://get2post.vercel.app/builder)
+For tools that can only follow links, the [builder](https://www.postviaget.com/builder)
 lets you edit each field and review the request before executing it.
 
 ## Limits and behavior
@@ -83,6 +83,8 @@ work without credentials. API forwarding requires `REQUEST_LOG_DATABASE_URL`;
 without it, requests return 503 before sending a POST. See the
 [operations reference](docs/operations.md) for local environment setup, database
 permissions, deployment, and logging details.
+
+The original [Vercel address](https://get2post.vercel.app/) also works as an alternative.
 
 ## Project structure
 

@@ -5,7 +5,8 @@ body, and headers in a GET URL; the server sends a POST and returns the response
 Use it for requests your user has authorized. This service does not expand your
 permissions to access a destination or perform an action.
 
-Base URL: https://get2post.vercel.app
+Base URL: https://www.postviaget.com
+Alternative base URL: https://get2post.vercel.app (also works)
 Public source: https://github.com/tylerthecoder/get-to-post
 Endpoint: GET /api/post
 Reading /, /llms.txt, or /builder does not send a POST. Calling /api/post can.
@@ -56,18 +57,18 @@ Requests blocked before reaching the function cannot be logged in this database.
 
 ## Quick start
 
-curl --get 'https://get2post.vercel.app/api/post' \
+curl --get 'https://www.postviaget.com/api/post' \
   --data-urlencode 'url=https://httpbin.org/post' \
   --data-urlencode 'data={"message":"Hello from an AI agent"}' \
   --data-urlencode 'headers={"Content-Type":"application/json"}' \
   --data-urlencode 'response=json'
 
 If your tool accepts only a URL, URL-encode each query value and request:
-https://get2post.vercel.app/api/post?url=https%3A%2F%2Fhttpbin.org%2Fpost&data=%7B%22message%22%3A%22Hello%22%7D&response=json
+https://www.postviaget.com/api/post?url=https%3A%2F%2Fhttpbin.org%2Fpost&data=%7B%22message%22%3A%22Hello%22%7D&response=json
 
 ## Link-only builder
 
-Start at https://get2post.vercel.app/builder if you can fetch pages and follow
+Start at https://www.postviaget.com/builder if you can fetch pages and follow
 links but cannot enter text or submit forms. Every edit is a normal hyperlink;
 no JavaScript, cookies, or session is required. Follow Edit destination, then
 use the URL fragments, letters, uppercase letters, numbers, symbols, JSON
