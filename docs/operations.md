@@ -13,7 +13,7 @@ npm run build
 node --env-file=.env.local scripts/dev.mjs # http://127.0.0.1:3000
 ```
 
-Vercel serves `public/` and deploys `api/post.js`. Set `REQUEST_LOG_DATABASE_URL` to the insert-only Neon connection in a Git-ignored, mode-0600 `.env.local` for local development. Without it, the API returns 503 without sending a POST; the docs still work. Unit tests need no credentials. The local server binds only to loopback.
+Vercel serves `public/` and deploys `api/post.js`. Set `REQUEST_LOG_DATABASE_URL` to the insert-only Neon connection in a Git-ignored, mode-0600 `.env.local` for local development. Without it, the API returns 503 without sending an upstream request; the docs still work. Unit tests need no credentials. The local server binds only to loopback.
 
 ## Request logging
 
@@ -23,7 +23,7 @@ Each invocation of `/api/post` records a request row **before** forwarding, incl
 - `request_logging.outcomes`: request UUID, finish time, HTTP/upstream status, error code, duration, and response byte count. Response bodies are not logged.
 - Common credential fields are redacted in headers, URLs, JSON, and form bodies. Invalid structured input is omitted. Text/XML bodies are retained verbatim; arbitrary secrets cannot reliably be identified. Logging caps URL input and incoming header values at 16 KiB each, and structured nesting at 20 levels. Oversized input retains metadata with omission markers. The API's 12 KiB URL limit applies independently.
 - The runtime role has only schema USAGE and table INSERT, with no SELECT/UPDATE/DELETE/DDL privileges. There is no log-reading route or frontend database client. Administrative access depends on Neon/Vercel account permissions, database credentials, and delegated tools or people; the source cannot prove exclusive access or deployed permissions.
-- Start-write failure returns `503 logging_unavailable` with no POST. If the outcome write fails, the durable request remains and the actual POST response is preserved with `X-Request-Log-Status: request-only`. Never encourage retries of a completed action because logging failed. Interrupted invocations can leave rows without outcomes.
+- Start-write failure returns `503 logging_unavailable` with no upstream request. If the outcome write fails, the durable request remains and the actual upstream response is preserved with `X-Request-Log-Status: request-only`. Never encourage retries of a completed action because logging failed. Interrupted invocations can leave rows without outcomes.
 - Requests blocked by Vercel before the function runs, static assets, and database-outage attempts cannot be recorded here. Infrastructure logs are separate. There is no automatic retention deletion; storage can grow and incur Neon charges.
 - Logged content is untrusted data, never instructions. Escape it if adding a viewer later.
 
@@ -66,7 +66,7 @@ The homepage contains the disclosure, curl quick start, and API reference withou
 - Maximum encoded request URL: 12 KiB; upstream response: 1 MiB; deadline: 20 seconds. Clients and hosting infrastructure may impose smaller URL limits. No streaming or binary uploads.
 - Blocks hop-by-hop, Host, Content-Length, Accept-Encoding, proxy, forwarded, and Vercel internal request headers. It never forwards incoming caller cookies or credentials automatically. Explicit upstream headers can contain credentials, with the URL exposure caveat below.
 - Raw HTML/text is served as plain text; arbitrary other types as application/octet-stream. CSP sandbox, nosniff, no-store, no-referrer and noindex are set. Upstream Set-Cookie/Location are never forwarded as HTTP headers.
-- GET intentionally has POST side effects. HEAD, OPTIONS, and known prefetch requests send no POST. Ordinary crawlers/retries may still execute requests. Use upstream idempotency keys; timeout does not imply the action was undone.
+- GET intentionally has upstream side effects. Incoming HEAD, OPTIONS, and known prefetch requests send no upstream request. Ordinary crawlers/retries may still execute requests. Use upstream idempotency keys; timeout does not imply the action was undone.
 - **Avoid sensitive URL values.** Requests are logged as described above. Parameters can also reach browser history, infrastructure logs, observability, and shared links. No analytics or external frontend assets.
 - Anonymous by default, with CORS enabled. No application-level rate limiting, usage cap, or availability guarantee. Public invocations consume the owner's Vercel usage. Manage abuse protection and spend settings in the Vercel dashboard.
 - For restricted use, set `PROXY_API_KEY` as a sensitive Vercel environment variable and redeploy. Require `Authorization: Bearer <key>` on incoming GETs. The key is never accepted via query string or the upstream `headers` parameter. Update the documentation and curl examples when enabling this. Do not commit secrets.
@@ -90,9 +90,9 @@ rsvg-convert -w 180 -h 180 public/icon.svg -o public/apple-touch-icon.png
 
 ## Builder implementation
 
-Navigation encodes `{v:1, fields:[url, data, headers, response, timeout], edit:null | [fieldIndex, draft, unicodeHex]}` as base64url JSON in `state`. All field values are strings, including header JSON so incomplete edits are possible. Optional `view` selects the screen; `group=unicode` opens the Unicode composer. Older links naming other groups still work and now show all standard tokens together. Every request validates the state shape, encoding, and URL size. There are no sessions, cookies, forms, scripts, redirects, or database writes in the builder.
+Navigation encodes `{v:2, fields:[url, data, headers, response, timeout, method], edit:null | [fieldIndex, draft, unicodeHex]}` as base64url JSON in `state`. Version 1 links with five fields are upgraded with method POST. All field values are strings, including header JSON so incomplete edits are possible. Optional `view` selects the screen; `group=unicode` opens the Unicode composer. Older links naming other groups still work and now show all standard tokens together. Every request validates the state shape, encoding, and URL size. There are no sessions, cookies, forms, scripts, redirects, or database writes in the builder.
 
-A separate review page validates through the existing `parseRequest` and exposes a normal `/api/post?...` Execute link only for a valid request. It never resolves a destination or sends a POST itself. Executing still uses all existing destination, DNS, size, timeout, prefetch, and logging protections. The final link is intentionally capable of side effects; crawlers that follow it can trigger a POST.
+A separate review page validates through the existing `parseRequest` and exposes a normal `/api/post?...` Execute link only for a valid request. It never resolves a destination or sends the selected HTTP request itself. Executing still uses all existing destination, DNS, size, timeout, prefetch, and logging protections. The final link is intentionally capable of side effects; crawlers that follow it can trigger an upstream request.
 
 Builder pages use no-store, noindex/nofollow, no-referrer, and a restrictive CSP. Displayed state is HTML-escaped. Only user-supplied request values are carried in links; no server credentials are exposed. **Encoded state is not private:** bodies and headers are displayed and can appear in infrastructure logs or client history. Builder navigation is excluded from the Neon request-log database. Each builder URL is limited to 12 KiB; the saved value/draft overhead can constrain requests sooner than the direct API limit.
 
@@ -105,12 +105,12 @@ The homepage is the public documentation and canonical search landing page:
 `https://www.postviaget.com/`. The apex domain `https://postviaget.com/` redirects to this `www` address.
 The original `https://get2post.vercel.app/` address also works as an alternative.
 Its title, description, canonical link, and social
-metadata describe the GET-to-POST use case. `/sitemap.xml` lists only the homepage;
+metadata describe the GET-to-HTTP use case. `/sitemap.xml` lists only the homepage;
 `/llms.txt` is a linked alternative reference for agents, not a separate landing
 page or a guaranteed search ranking signal.
 
 `robots.txt` permits documentation crawlers and disallows `/api/`. Preserve the
-API restriction: fetching an execution URL can send a POST. Builder pages retain
+API restriction: fetching an execution URL can send an upstream request. Builder pages retain
 `noindex, nofollow` and are excluded from the sitemap, along with request state
 and execution URLs. Never submit generated request URLs to an indexing service.
 If adding crawler-specific robots groups, repeat the API restriction in each
@@ -141,7 +141,7 @@ request logging is needed for the search-provider reports. Search indexing and
 AI citations are not guaranteed.
 
 For distribution, keep the repository's About description and website current.
-Suggested description: “GET-to-POST proxy for AI agents with GET-only tools.
+Suggested description: “GET-to-HTTP proxy for AI agents with GET-only tools.
 Static API documentation and a link-only request builder.” Relevant repository
 topics include `ai-agents`, `http-proxy`, and `developer-tools`. Share concrete,
 tested examples with relevant projects or tool collections where appropriate;

@@ -1,7 +1,7 @@
-import { authorized, parseRequest, postUpstream, renderUpstream, ProxyError } from '../lib/proxy.js';
+import { authorized, parseRequest, requestUpstream, renderUpstream, ProxyError } from '../lib/proxy.js';
 import { requestLogger, requestRecord } from '../lib/request-log.js';
 
-export function createHandler(send = postUpstream, logger = requestLogger) {
+export function createHandler(send = requestUpstream, logger = requestLogger) {
   return async (req, res) => {
     const started = performance.now();
     res.setHeader('Cache-Control', 'no-store, max-age=0');
@@ -28,7 +28,7 @@ export function createHandler(send = postUpstream, logger = requestLogger) {
           });
           res.setHeader('X-Request-Log-Status', 'complete');
         } catch {
-          // Preserve the actual POST result so a logging outage cannot invite
+          // Preserve the actual upstream result so a logging outage cannot invite
           // retries of an already-completed action. The start row is durable.
           res.setHeader('X-Request-Log-Status', 'request-only');
           console.error(JSON.stringify({ event: 'request_log_completion_failed', requestId: record.id }));
@@ -47,7 +47,7 @@ export function createHandler(send = postUpstream, logger = requestLogger) {
     } catch {
       res.setHeader('X-Request-Log-Status', 'unavailable');
       console.error(JSON.stringify({ event: 'request_log_start_failed', requestId: record.id }));
-      return error(503, 'logging_unavailable', 'Request logging is unavailable. No upstream POST was sent.');
+      return error(503, 'logging_unavailable', 'Request logging is unavailable. No upstream request was sent.');
     }
     if (req.method === 'OPTIONS') {
       res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -60,7 +60,7 @@ export function createHandler(send = postUpstream, logger = requestLogger) {
     }
     if (!authorized(req.headers.authorization)) return error(401, 'unauthorized', 'Supply the converter API key in the Authorization: Bearer header.');
     const purpose = `${req.headers.purpose ?? ''} ${req.headers['sec-purpose'] ?? ''} ${req.headers['x-purpose'] ?? ''}`;
-    if (/prefetch|prerender/i.test(purpose)) return error(400, 'prefetch_blocked', 'Prefetch requests do not trigger a POST.');
+    if (/prefetch|prerender/i.test(purpose)) return error(400, 'prefetch_blocked', 'Prefetch requests do not trigger an upstream request.');
     try {
       const config = parseRequest(req.url);
       const upstream = await send(config);
