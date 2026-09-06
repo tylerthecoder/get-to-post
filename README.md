@@ -58,14 +58,34 @@ lets you edit each field and review the request before executing it.
   credentials, and redirects are blocked.
 - Maximum encoded request URL: 12 KiB. Maximum upstream response: 1 MiB.
   Maximum upstream deadline: 20 seconds, plus logging time. Clients and hosting
-  infrastructure may impose smaller URL limits. No streaming or binary uploads.
+  infrastructure may impose smaller URL limits. No streaming; binary bodies require the optional chunk API.
 - GET requests to the API have POST side effects. Crawlers and retries can repeat
   an action; use upstream idempotency keys where available. A timeout does not
   mean the upstream action was undone.
 - Incoming caller cookies and credentials are not automatically forwarded.
   Upstream `Set-Cookie` and `Location` headers are not forwarded.
-- The hosted service has no application-level rate limit or availability guarantee.
+- The direct API has no application-level rate limit or availability guarantee.
   Use it only for actions your user has authorized.
+
+## Chunked payloads (optional)
+
+`GET /api/chunks` supports up to **256 KiB** through immutable 4 KiB base64url
+chunks, followed by a single execution request. A fixed expiry and full-body
+SHA-256 bind the upload; execution is claimed atomically and never automatically
+retried. This is an API addition; the link-only builder remains stateless.
+
+Shared PostgreSQL limits allow 32 live uploads (at most 8 MiB of body data),
+64 creations / 16 MiB reserved per 24-hour window, 240 operations/minute,
+6000 operations/24-hour window, and four concurrent forwarding attempts.
+Uploads expire within 15 minutes; physical deletion runs on subsequent traffic.
+Chunks/status/rejections do not create permanent request logs; execution logs
+routing metadata with the assembled body omitted. Temporary storage contains the
+original body and headers, subject to the same provider/owner access policy.
+
+**Disabled by default.** Requires the separate function-only chunk database role,
+`CHUNK_DATABASE_URL`, `CHUNK_UPLOADS_ENABLED=1`, and operator-configured edge abuse
+controls. App quotas bound stored data and forwarding, not flood traffic or bills.
+See [protocol, limits, threat model, setup, and rollback](docs/chunk-uploads.md).
 
 ## Development
 

@@ -1,7 +1,7 @@
 import { authorized, parseRequest, postUpstream, renderUpstream, ProxyError } from '../lib/proxy.js';
 import { requestLogger, requestRecord } from '../lib/request-log.js';
 
-export function createHandler(send = postUpstream, logger = requestLogger) {
+export function createHandler(send = postUpstream, logger = requestLogger, prepare = (req) => parseRequest(req.url)) {
   return async (req, res) => {
     const started = performance.now();
     res.setHeader('Cache-Control', 'no-store, max-age=0');
@@ -62,7 +62,7 @@ export function createHandler(send = postUpstream, logger = requestLogger) {
     const purpose = `${req.headers.purpose ?? ''} ${req.headers['sec-purpose'] ?? ''} ${req.headers['x-purpose'] ?? ''}`;
     if (/prefetch|prerender/i.test(purpose)) return error(400, 'prefetch_blocked', 'Prefetch requests do not trigger a POST.');
     try {
-      const config = parseRequest(req.url);
+      const config = prepare(req);
       const upstream = await send(config);
       upstreamStatus = upstream.status;
       const result = renderUpstream(upstream, config.mode);

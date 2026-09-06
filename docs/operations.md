@@ -63,7 +63,7 @@ The homepage contains the disclosure, curl quick start, and API reference withou
 ## Operational boundaries
 
 - Public HTTPS destinations, port 443 only. Blocks private/special-use IP ranges, mixed private/public DNS answers, URL credentials, and redirects. DNS is resolved once and the HTTPS connection is pinned to a vetted IP while preserving hostname and TLS verification. No connection pooling or retries.
-- Maximum encoded request URL: 12 KiB; upstream response: 1 MiB; deadline: 20 seconds. Clients and hosting infrastructure may impose smaller URL limits. No streaming or binary uploads.
+- Maximum encoded request URL: 12 KiB; upstream response: 1 MiB; deadline: 20 seconds. Clients and hosting infrastructure may impose smaller URL limits. No streaming; the optional chunk API supports binary bodies.
 - Blocks hop-by-hop, Host, Content-Length, Accept-Encoding, proxy, forwarded, and Vercel internal request headers. It never forwards incoming caller cookies or credentials automatically. Explicit upstream headers can contain credentials, with the URL exposure caveat below.
 - Raw HTML/text is served as plain text; arbitrary other types as application/octet-stream. CSP sandbox, nosniff, no-store, no-referrer and noindex are set. Upstream Set-Cookie/Location are never forwarded as HTTP headers.
 - GET intentionally has POST side effects. HEAD, OPTIONS, and known prefetch requests send no POST. Ordinary crawlers/retries may still execute requests. Use upstream idempotency keys; timeout does not imply the action was undone.
@@ -153,3 +153,11 @@ References:
 - [OpenAI: search and training crawlers](https://developers.openai.com/api/docs/bots)
 - [Bing: sitemap discovery](https://blogs.bing.com/webmaster/July-2025/Keeping-Content-Discoverable-with-Sitemaps-in-AI-Powered-Search)
 - [Bing: AI Performance reports](https://blogs.bing.com/webmaster/February-2026/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview)
+
+## Optional chunk API
+
+See [chunk uploads](chunk-uploads.md) for the separate function-only database role,
+fixed storage/rate limits, setup, operator edge protections, and kill switch.
+Chunk upload/status/rejection traffic is excluded from the permanent request log;
+executions retain routing metadata with the assembled body omitted. The direct
+API and insert-only logger role are unchanged.
