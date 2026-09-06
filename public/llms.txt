@@ -43,8 +43,10 @@ operator's commitments.
 Common credential fields (Authorization, Cookie, API keys, passwords, secrets,
 tokens, and signatures) are redacted in headers and structured query/body fields.
 Referer and Vercel internal headers are also redacted.
-Malformed JSON is omitted; oversized requests/headers and deeply nested content
-are bounded. Text/XML bodies are retained verbatim. Redaction cannot identify all
+Malformed JSON bodies and text/XML are retained with best-effort redaction:
+recognizable credential assignments have their value and remaining text redacted.
+Invalid structured headers and URLs are omitted; oversized requests/headers and
+deeply nested content are bounded. Redaction cannot identify all
 secrets, especially in nested URLs, encoded JSON strings, free text, or unusual
 field names. Do not send confidential data.
 

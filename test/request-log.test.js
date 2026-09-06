@@ -54,6 +54,26 @@ test('plain text body is retained and incoming header storage is bounded', () =>
   assert.match(record.headers.huge, /OMITTED/);
 });
 
+test('unparseable bodies remain readable with best-effort credential redaction', () => {
+  for (const data of ['hello agent', '{"message":"unfinished', '', 'message=hello']) {
+    const request = req({ data });
+    const original = request.url;
+    assert.equal(query(requestRecord(request), 'data'), data);
+    assert.equal(request.url, original);
+  }
+  for (const data of [
+    '{"message":"hello", "token":"example-secret',
+    '{"message":"hello", "\\u0074oken":{"value":"example-secret"}',
+    "message: hello, 'password': 'example-secret'",
+    'message=hello&api_key=example-secret',
+  ]) {
+    const logged = query(requestRecord(req({ data })), 'data');
+    assert.match(logged, /hello/);
+    assert.match(logged, /\[REDACTED\]$/);
+    assert.ok(!logged.includes('example-secret'));
+  }
+});
+
 async function serve(t, send, logger) {
   const server = createServer(createHandler(send, logger));
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
