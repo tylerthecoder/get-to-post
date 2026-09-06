@@ -2,11 +2,11 @@
 
 # GET2POST
 
-**Send POST requests from GET-only AI tools.**
+**Send HTTP requests from GET-only AI tools.**
 
-GET2POST is a GET-to-POST proxy for AI agents. Provide a public HTTPS destination,
-body, and headers in a GET URL; the service sends the POST and returns the upstream
-response. The documentation is static HTML, and the optional URL builder works
+GET2POST is a GET-to-HTTP proxy for AI agents. Provide a public HTTPS destination,
+method, body, and headers in a GET URL; the service sends the selected HTTP request
+and returns the upstream response. The documentation is static HTML, and the optional URL builder works
 entirely through ordinary hyperlinks.
 
 [Website and API reference](https://www.postviaget.com/) ·
@@ -43,6 +43,7 @@ with safe response content types. Converter failures return HTTP 4xx/5xx and
 | Parameter | Description | Default |
 | --- | --- | --- |
 | `url` | Public HTTPS destination on port 443 | Required |
+| `method` | HTTP method token (normalized to uppercase), including custom methods | `POST` |
 | `data` | Exact UTF-8 request body | Empty |
 | `headers` | JSON object of string-valued headers | Content-Type: application/json |
 | `response` | `raw` or `json` | `raw` |
@@ -52,6 +53,31 @@ URL-encode every parameter with `URLSearchParams` or `curl --data-urlencode`.
 For tools that can only follow links, the [builder](https://www.postviaget.com/builder)
 lets you edit each field and review the request before executing it.
 
+Choose an upstream method with `method=PUT`, `method=PATCH`, `method=DELETE`,
+`method=GET`, `method=HEAD`, `method=OPTIONS`, `method=TRACE`, or `method=CONNECT`.
+Custom HTTP method tokens such as `PROPFIND` also work. Existing URLs default to
+POST. For example:
+
+```sh
+curl --get 'https://www.postviaget.com/api/post' \
+  --data-urlencode 'url=https://httpbin.org/anything' \
+  --data-urlencode 'method=PATCH' \
+  --data-urlencode 'data={"message":"Updated"}' \
+  --data-urlencode 'response=json'
+```
+
+The builder's **Edit method** links offer presets and custom token editing.
+Old builder links still select POST. Incoming HEAD, OPTIONS, and prefetch requests
+never execute an upstream request; use an incoming GET with `method=HEAD` or
+`method=OPTIONS` to send those methods upstream.
+
+HEAD responses have an empty body. TRACE and CONNECT require empty request bodies.
+CONNECT accepts only an HTTPS origin (no path or query), targets that same host on
+port 443, and returns handshake status and headers with an empty body before
+closing the connection. It does not relay a tunnel. Use `response=json` to inspect
+upstream headers. Other methods forward `data` exactly; the destination decides
+whether it accepts a body for that method.
+
 ## Limits and behavior
 
 - Public HTTPS destinations only, on port 443. Private and special-use IPs, URL
@@ -59,7 +85,7 @@ lets you edit each field and review the request before executing it.
 - Maximum encoded request URL: 12 KiB. Maximum upstream response: 1 MiB.
   Maximum upstream deadline: 20 seconds, plus logging time. Clients and hosting
   infrastructure may impose smaller URL limits. No streaming or binary uploads.
-- GET requests to the API have POST side effects. Crawlers and retries can repeat
+- GET requests to the API have upstream side effects. Crawlers and retries can repeat
   an action; use upstream idempotency keys where available. A timeout does not
   mean the upstream action was undone.
 - Incoming caller cookies and credentials are not automatically forwarded.
@@ -80,7 +106,7 @@ npm run dev
 
 The local server listens at `http://127.0.0.1:3000`. Documentation and builder pages
 work without credentials. API forwarding requires `REQUEST_LOG_DATABASE_URL`;
-without it, requests return 503 before sending a POST. See the
+without it, requests return 503 before sending an upstream request. See the
 [operations reference](docs/operations.md) for local environment setup, database
 permissions, deployment, and logging details.
 

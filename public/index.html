@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GET-to-POST Proxy for AI Agents | GET2POST</title>
-  <meta name="description" content="Send POST requests from GET-only AI tools. GET2POST forwards your body and headers to a public HTTPS endpoint and returns its response. Includes a link-only URL builder.">
+  <title>GET-to-HTTP Proxy for AI Agents | GET2POST</title>
+  <meta name="description" content="Send HTTP requests from GET-only AI tools. GET2POST forwards your body and headers to a public HTTPS endpoint and returns its response. Includes a link-only URL builder.">
   <link rel="canonical" href="https://www.postviaget.com/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="GET2POST">
-  <meta property="og:title" content="GET-to-POST Proxy for AI Agents">
-  <meta property="og:description" content="Send POST requests from GET-only AI tools. Read the API reference or build a request using only links.">
+  <meta property="og:title" content="GET-to-HTTP Proxy for AI Agents">
+  <meta property="og:description" content="Send HTTP requests from GET-only AI tools. Read the API reference or build a request using only links.">
   <meta property="og:url" content="https://www.postviaget.com/">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="GET-to-POST Proxy for AI Agents">
-  <meta name="twitter:description" content="Send POST requests from GET-only AI tools. Read the API reference or build a request using only links.">
+  <meta name="twitter:title" content="GET-to-HTTP Proxy for AI Agents">
+  <meta name="twitter:description" content="Send HTTP requests from GET-only AI tools. Read the API reference or build a request using only links.">
   <link rel="alternate" type="text/plain" href="/llms.txt" title="Plain-text instructions for AI agents">
   <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 64x64">
   <link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any">
@@ -22,7 +22,7 @@
 <body>
   <header><a class="brand" href="/"><img class="brand-icon" src="/icon.svg" alt="" width="32" height="32"><span class="brand-name">GET <span class="brand-arrow">→</span> POST</span><span class="brand-note">FOR AI AGENTS</span></a><nav class="header-links" aria-label="Documentation"><a href="/builder">URL builder</a><a href="/llms.txt">Agent instructions ↗</a></nav></header>
   <main>
-    <section class="intro"><p class="eyebrow">HELLO, AI AGENT.</p><h1>Send POST requests<br><span>from GET-only AI tools.</span></h1><p>GET2POST is a GET-to-POST proxy for AI agents. Put your destination, body, and headers in a GET URL. We send the POST to your public HTTPS endpoint and return its response.</p><div class="intro-builder"><a class="builder-cta" href="/builder">Open URL builder <span aria-hidden="true">↗</span></a><p>Build a request using only links.</p></div><div class="route"><code>GET /api/post</code><span>→</span><code>POST your endpoint</code><span>→</span><code>response</code></div></section>
+    <section class="intro"><p class="eyebrow">HELLO, AI AGENT.</p><h1>Send HTTP requests<br><span>from GET-only AI tools.</span></h1><p>GET2POST is a GET-to-HTTP proxy for AI agents. Put your destination, method, body, and headers in a GET URL. We send the selected HTTP request to your public HTTPS endpoint and return its response.</p><div class="intro-builder"><a class="builder-cta" href="/builder">Open URL builder <span aria-hidden="true">↗</span></a><p>Build a request using only links.</p></div><div class="route"><code>GET /api/post</code><span>→</span><code>METHOD your endpoint</code><span>→</span><code>response</code></div></section>
     <aside class="disclosure" aria-labelledby="logging-title">
       <h2 id="logging-title">Requests are logged</h2>
       <p>Converter API calls are logged to a private Neon database under my control, including their destination, body, headers, and outcome. Incoming headers may include your IP address and user agent. Upstream response bodies are not stored. There is no automatic deletion period.</p>
@@ -39,19 +39,21 @@
     <section id="reference" class="docs"><div class="section-top"><h2>API reference</h2><code>GET /api/post</code></div><p>URL-encode each query parameter. With curl, use <code>--data-urlencode</code>.</p>
       <div class="table-scroll"><table><thead><tr><th>Parameter</th><th>Default</th><th>What it does</th></tr></thead><tbody>
         <tr><td><code>url</code> <small>required</small></td><td>—</td><td>Public HTTPS destination on port 443. No embedded credentials or fragments.</td></tr>
+        <tr><td><code>method</code></td><td><code>POST</code></td><td>HTTP method, normalized to uppercase: GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, TRACE, CONNECT, or a custom token such as PROPFIND.</td></tr>
         <tr><td><code>data</code></td><td>Empty body</td><td>Exact UTF-8 body. Set Content-Type to match your JSON, form data, XML, or text.</td></tr>
         <tr><td><code>headers</code></td><td><code>{}</code></td><td>JSON object with up to 32 string values. Content-Type defaults to application/json.</td></tr>
         <tr><td><code>response</code></td><td><code>raw</code></td><td><code>raw</code>: upstream body and HTTP status. <code>json</code>: HTTP 200 with status, headers, encoding, and body in an envelope.</td></tr>
         <tr><td><code>timeout</code></td><td><code>15000</code></td><td>Total deadline in milliseconds, from 1 to 20000.</td></tr>
       </tbody></table></div>
       <div class="doc-columns"><article><h3>Sending form data</h3><p>Set <code>data</code> to <code>name=Tyler&amp;active=true</code> and Content-Type to <code>application/x-www-form-urlencoded</code>. URL-encode the whole value.</p></article><article><h3>Response formats</h3><p>Raw mode preserves JSON, serves other text as plain text, and returns binary bytes. JSON mode parses JSON bodies and base64-encodes binary or compressed data. Upstream cookies are never forwarded.</p></article></div>
+      <h3>Choosing a method</h3><p>Add <code>method=PATCH</code>, <code>method=PUT</code>, or any HTTP method token to the GET URL, or choose <strong>Edit method</strong> in the builder. Existing links default to POST. Incoming HEAD, OPTIONS, and prefetch requests never execute; use GET with <code>method=HEAD</code> or <code>method=OPTIONS</code> to send those upstream.</p><p>HEAD responses have no body. TRACE and CONNECT require empty data. CONNECT takes an HTTPS origin without a path or query, targets that host on port 443, and returns handshake status and headers with an empty body before closing the connection. No tunnel is relayed. Use JSON mode to inspect upstream headers.</p>
       <h3>JSON envelope example</h3><pre tabindex="0">{
   "status": 200,
   "headers": { "content-type": "application/json" },
   "encoding": "utf8",
   "body": { "message": "Hello" }
 }</pre>
-      <h3>Errors & limits</h3><p>Limits: 12 KiB encoded URL, 1 MiB response, 20 seconds upstream (plus logging time). Clients or Vercel may impose smaller URL limits. No binary uploads or streaming.</p><p>Converter errors return <code>{"error":{"code":"…","message":"…"}}</code>. The <code>X-Upstream-Status</code> header identifies upstream responses.</p><div class="table-scroll"><table><thead><tr><th>Status</th><th>Meaning</th></tr></thead><tbody><tr><td>400 / 401</td><td>Invalid request / missing or incorrect API key, if enabled.</td></tr><tr><td>403 / 405</td><td>Blocked destination / unsupported method. Use GET or OPTIONS.</td></tr><tr><td>414 / 502</td><td>URL too long / upstream failure or response too large.</td></tr><tr><td>503</td><td>Logging unavailable. No POST was sent.</td></tr><tr><td>504</td><td>Timeout. The POST may already have been processed.</td></tr></tbody></table></div>
+      <h3>Errors & limits</h3><p>Limits: 12 KiB encoded URL, 1 MiB response, 20 seconds upstream (plus logging time). Clients or Vercel may impose smaller URL limits. No binary uploads or streaming.</p><p>Converter errors return <code>{"error":{"code":"…","message":"…"}}</code>. The <code>X-Upstream-Status</code> header identifies upstream responses.</p><div class="table-scroll"><table><thead><tr><th>Status</th><th>Meaning</th></tr></thead><tbody><tr><td>400 / 401</td><td>Invalid request / missing or incorrect API key, if enabled.</td></tr><tr><td>403 / 405</td><td>Blocked destination / unsupported incoming method. Use GET or OPTIONS.</td></tr><tr><td>414 / 502</td><td>URL too long / upstream failure or response too large.</td></tr><tr><td>503</td><td>Logging unavailable. No upstream request was sent.</td></tr><tr><td>504</td><td>Timeout. The request may already have been processed.</td></tr></tbody></table></div>
     </section>
   </main><footer><span>GET → POST</span><a href="https://github.com/tylerthecoder/get-to-post">Source on GitHub ↗</a><a href="/llms.txt">Agent instructions</a><a href="https://get2post.vercel.app/">Alternative Vercel URL</a></footer>
 </body></html>

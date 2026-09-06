@@ -191,3 +191,26 @@ test('the public builder route and discovery links are configured', async () => 
   const html = await readFile(new URL('../public/index.html', import.meta.url), 'utf8');
   assert.ok(links(html).some((item) => item.href === '/builder'));
 });
+
+test('method presets and custom tokens reach review and execution; old links default to POST', () => {
+  for (const method of ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'TRACE', 'CONNECT', 'PROPFIND']) {
+    let html = renderBuilder(stateUrl(requestState({ 0: 'https://example.org/' }), 'summary')).html;
+    const follow = (label) => { const result = renderBuilder(find(html, label)); assert.equal(result.status, 200); html = result.html; };
+    follow('Edit method');
+    if (method === 'PROPFIND') {
+      follow('Clear field');
+      for (const letter of method) follow(letter);
+    } else follow(`Set ${method}`);
+    follow('Done'); follow('Review request');
+    assert.equal(parseRequest(find(html, 'Execute request')).method, method);
+    assert.ok(html.includes(`<h3>${method} https://example.org/</h3>`));
+    follow('Edit request'); follow('Edit method'); follow('Set DELETE'); follow('Cancel editing'); follow('Review request');
+    assert.equal(parseRequest(find(html, 'Execute request')).method, method);
+  }
+  const old = renderBuilder(stateUrl(requestState({})));
+  assert.equal(parseRequest(find(old.html, 'Execute request')).method, 'POST');
+  const invalid = { v: 2, fields: [...requestState({}).fields, 'GET POST'], edit: null };
+  assert.match(renderBuilder(stateUrl(invalid)).html, /Request needs an edit/);
+  assert.ok(!links(renderBuilder(stateUrl(invalid)).html).some((item) => item.label === 'Execute request'));
+  assert.equal(renderBuilder(stateUrl(requestState({}, [5, 'DELETE', '']), 'edit')).status, 400);
+});

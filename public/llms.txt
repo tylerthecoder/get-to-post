@@ -1,7 +1,7 @@
-# GET2POST — GET-to-POST proxy for AI agents
+# GET2POST — GET-to-HTTP proxy for AI agents
 
-Send POST requests from GET-only AI tools. Supply a destination,
-body, and headers in a GET URL; the server sends a POST and returns the response.
+Send HTTP requests from GET-only AI tools. Supply a destination,
+method, body, and headers in a GET URL; the server sends the selected HTTP request and returns the response.
 Use it for requests your user has authorized. This service does not expand your
 permissions to access a destination or perform an action.
 
@@ -9,12 +9,12 @@ Base URL: https://www.postviaget.com
 Alternative base URL: https://get2post.vercel.app (also works)
 Public source: https://github.com/tylerthecoder/get-to-post
 Endpoint: GET /api/post
-Reading /, /llms.txt, or /builder does not send a POST. Calling /api/post can.
+Reading /, /llms.txt, or /builder does not send an upstream request. Calling /api/post can.
 
 ## Logging
 
 Every converter API call is logged to a private Neon database, including rejected
-requests. Logs include the time, method, destination, POST body, query parameters,
+requests. Logs include the time, method, destination, request body, query parameters,
 incoming and upstream request headers, response status, duration, and byte counts.
 Incoming headers may include your IP address and user agent. Upstream response
 bodies are not stored. Static pages, assets, and builder navigation are not part of this API log.
@@ -31,7 +31,7 @@ request data to operate the service, subject to their own access controls.
 
 Request URLs contain your body and headers and may also appear in Vercel logs,
 client history, or shared links. Redaction in the Neon log does not remove those
-other copies. The destination receives the original POST body and explicit
+other copies. The destination receives the original request body and explicit
 upstream headers.
 
 Inspect the logging/redaction implementation in lib/request-log.js and database
@@ -50,10 +50,10 @@ deeply nested content are bounded. Redaction cannot identify all
 secrets, especially in nested URLs, encoded JSON strings, free text, or unusual
 field names. Do not send confidential data.
 
-Requests must be recorded before a POST can be sent. If logging is unavailable,
-the API returns 503 logging_unavailable and sends no POST. If recording the
+Requests must be recorded before an upstream request can be sent. If logging is unavailable,
+the API returns 503 logging_unavailable and sends no upstream request. If recording the
 outcome fails after sending, the original request remains logged and the actual
-POST result is returned with X-Request-Log-Status: request-only. Do not retry an
+upstream result is returned with X-Request-Log-Status: request-only. Do not retry an
 action just to get a complete log. An interrupted request may have no outcome.
 Requests blocked before reaching the function cannot be logged in this database.
 
@@ -67,6 +67,11 @@ curl --get 'https://www.postviaget.com/api/post' \
 
 If your tool accepts only a URL, URL-encode each query value and request:
 https://www.postviaget.com/api/post?url=https%3A%2F%2Fhttpbin.org%2Fpost&data=%7B%22message%22%3A%22Hello%22%7D&response=json
+
+To use another method, add method=PATCH (or PUT, DELETE, GET, HEAD, OPTIONS,
+TRACE, CONNECT, or an extension method) to the query parameters. The incoming
+request remains GET. Omitting method preserves POST behavior. For example:
+https://www.postviaget.com/api/post?url=https%3A%2F%2Fhttpbin.org%2Fanything&method=PATCH&data=%7B%22message%22%3A%22Updated%22%7D&response=json
 
 ## Link-only builder
 
@@ -82,10 +87,11 @@ a separate page: enter a hexadecimal code point and append the resulting
 character, then use Back to all tokens to return. Headers
 remain JSON text while editing; review validates the completed object.
 
-Change response mode selects json or raw. Edit timeout offers presets and digit
+Edit method offers standard method presets and custom token editing. Old builder
+links default to POST. Change response mode selects json or raw. Edit timeout offers presets and digit
 links. Review request shows the complete draft without sending anything. Only
 the distinct Execute request link on a valid review page calls /api/post.
-Do not follow it without authorization. Retries or scanners can repeat a POST.
+Do not follow it without authorization. Retries or scanners can repeat an action.
 Destination DNS checks still run at execution, not while browsing the builder.
 
 Each link carries the full state as base64url JSON. Encoding is not encryption:
@@ -101,7 +107,14 @@ fit the builder. Unavailable links are marked; shorten fields or use the API.
 
 - url (required): Absolute public HTTPS destination, port 443 only. No URL
   credentials or fragment. Destination query strings are allowed.
-- data (default empty): Exact UTF-8 POST body. JSON, form data, XML, or text.
+- method (default POST): HTTP method token, normalized to uppercase. GET, HEAD,
+  POST, PUT, PATCH, DELETE, OPTIONS, TRACE, CONNECT, and custom tokens such as
+  PROPFIND are accepted. Empty or malformed tokens return 400 invalid_method.
+  HEAD returns an empty body. TRACE and CONNECT require empty data.
+  CONNECT requires an HTTPS origin without a path or query; it targets that same
+  host on port 443 and returns handshake status/headers with an empty body, then
+  closes the connection. No tunnel is relayed. Use response=json to read headers.
+- data (default empty): Exact UTF-8 request body. JSON, form data, XML, or text.
 - headers (default {}): JSON object with up to 32 string values. Content-Type
   defaults to application/json. For form data use application/x-www-form-urlencoded.
 - response (default raw): Prefer json for agents. It returns HTTP 200 with
@@ -121,9 +134,9 @@ JSON envelope: {"status":200,"headers":{"content-type":"application/json"},"enco
 Converter error: {"error":{"code":"invalid_url","message":"..."}}
 
 400 invalid input or detected prefetch; 401 optional converter key missing/wrong;
-403 blocked destination; 405 unsupported method; 414 URL too long;
+403 blocked destination; 405 unsupported incoming method; 414 URL too long;
 502 upstream connection/TLS/DNS failure or response too large;
-503 logging unavailable (no POST sent); 504 timeout (POST may have been processed).
+503 logging unavailable (no upstream request sent); 504 timeout (request may have been processed).
 
 X-Upstream-Status identifies upstream responses. X-Upstream-Content-Type contains
 the original media type. Compressed raw bytes are identified by
@@ -132,11 +145,11 @@ X-Request-Log-Status is complete, request-only, or unavailable.
 
 ## Constraints
 
-- Every GET can have POST side effects. Retries, scanners, or reopening URLs can
+- Every GET can have upstream side effects. Retries, scanners, or reopening URLs can
   repeat an action. Use an upstream idempotency key when available. A timeout
-  does not undo a POST. Redirects are never followed, and no Location header is
+  does not undo a request. Redirects are never followed, and no Location header is
   forwarded in raw mode; inspect Location in the JSON envelope if needed.
-- HEAD, OPTIONS, and known prefetches send no POST. Responses use no-store.
+- Incoming HEAD, OPTIONS, and known prefetches send no upstream request. Use GET with method=HEAD or method=OPTIONS to send those methods upstream. Responses use no-store.
 - Only public HTTPS endpoints. Private/special-use IPs and mixed private/public
   DNS answers are blocked; connections use a vetted IP with TLS verification.
 - Host, Content-Length, Accept-Encoding, hop-by-hop, proxy, X-Forwarded-*, and
