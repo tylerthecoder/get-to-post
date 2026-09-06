@@ -140,7 +140,8 @@ chunks, and assembled body are omitted. Rejected/upload/status calls are not add
 to the permanent database log. Response bodies are not stored.
 
 Limits are global per upload database: 32 live uploads / at most 8 MiB body data,
-64 creations / 16 MiB reserved body data per 24-hour window, 240 operations/minute,
+64 creations and 64 execution claims / 16 MiB reserved body data per 24-hour window,
+240 operations/minute,
 6000 operations/24-hour window, four simultaneous forwarding attempts. Fixed-window
 boundaries can allow two windows' allowance close together. Retries count toward
 operation limits; expiry does not refund daily reservations. Unknown tokens and

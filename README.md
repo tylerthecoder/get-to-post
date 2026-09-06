@@ -75,7 +75,7 @@ SHA-256 bind the upload; execution is claimed atomically and never automatically
 retried. This is an API addition; the link-only builder remains stateless.
 
 Shared PostgreSQL limits allow 32 live uploads (at most 8 MiB of body data),
-64 creations / 16 MiB reserved per 24-hour window, 240 operations/minute,
+64 creations and 64 executions / 16 MiB reserved per 24-hour window, 240 operations/minute,
 6000 operations/24-hour window, and four concurrent forwarding attempts.
 Uploads expire within 15 minutes; physical deletion runs on subsequent traffic.
 Chunks/status/rejections do not create permanent request logs; execution logs

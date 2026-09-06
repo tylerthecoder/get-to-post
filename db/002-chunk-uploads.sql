@@ -10,6 +10,7 @@ CREATE TABLE chunk_uploads.budget (
   day_start timestamptz NOT NULL DEFAULT '-infinity',
   day_ops integer NOT NULL DEFAULT 0,
   day_creates integer NOT NULL DEFAULT 0,
+  day_executions integer NOT NULL DEFAULT 0,
   day_bytes integer NOT NULL DEFAULT 0
 );
 INSERT INTO chunk_uploads.budget DEFAULT VALUES;
@@ -63,7 +64,7 @@ BEGIN
   DELETE FROM chunk_uploads.uploads WHERE expires_at <= t;
   IF b.minute_start <= t - interval '1 minute' THEN b.minute_start := t; b.minute_ops := 0; END IF;
   IF b.day_start <= t - interval '24 hours' THEN
-    b.day_start := t; b.day_ops := 0; b.day_creates := 0; b.day_bytes := 0;
+    b.day_start := t; b.day_ops := 0; b.day_creates := 0; b.day_executions := 0; b.day_bytes := 0;
   END IF;
   -- Internal finish releases a claimed slot even when the public budget is spent.
   -- The restricted function cannot make another POST or reopen the upload.
@@ -73,7 +74,7 @@ BEGIN
     b.minute_ops := b.minute_ops + 1; b.day_ops := b.day_ops + 1;
   END IF;
   UPDATE chunk_uploads.budget SET minute_start = b.minute_start, minute_ops = b.minute_ops,
-    day_start = b.day_start, day_ops = b.day_ops, day_creates = b.day_creates, day_bytes = b.day_bytes WHERE id;
+    day_start = b.day_start, day_ops = b.day_ops, day_creates = b.day_creates, day_executions = b.day_executions, day_bytes = b.day_bytes WHERE id;
   SELECT * INTO u FROM chunk_uploads.uploads WHERE key = token_hash;
   IF action = 'create' THEN
     IF request_text IS NULL OR total_bytes IS NULL OR total_bytes NOT BETWEEN 1 AND 262144
@@ -127,6 +128,10 @@ BEGIN
     IF (SELECT count(*) FROM chunk_uploads.uploads WHERE state = 'claimed') >= 4 THEN
       RETURN jsonb_build_object('error', 'execution_capacity', 'retryAfter', 30);
     END IF;
+    IF b.day_executions >= 64 THEN
+      RETURN jsonb_build_object('error', 'upload_daily_limit', 'retryAfter', 86400);
+    END IF;
+    UPDATE chunk_uploads.budget SET day_executions = day_executions + 1 WHERE id;
     UPDATE chunk_uploads.uploads SET state = 'claimed' WHERE key = token_hash;
     DELETE FROM chunk_uploads.parts WHERE upload_key = token_hash;
     RETURN jsonb_build_object('request', u.request, 'body', encode(assembled, 'base64'));

@@ -46,7 +46,7 @@ test('upload database invariants and HTTP lifecycle', async (t) => {
   t.after(async () => { await exec('DROP SCHEMA chunk_uploads CASCADE'); await (db.close ? db.close() : db.end()); });
   const store = createChunkStore({ connectionString: () => 'local-test', client: () => ({ query: async (query, values) => (await db.query(query, values.map((v, i) => db.exec && i === 7 && v ? Buffer.from(v.slice(2), 'hex') : v))).rows }) });
   const run = (params) => store.operate(parseChunkRequest(url(params)));
-  const reset = () => exec("TRUNCATE chunk_uploads.parts, chunk_uploads.uploads; UPDATE chunk_uploads.budget SET enabled=true, minute_start='-infinity', minute_ops=0,day_start='-infinity',day_ops=0,day_creates=0,day_bytes=0");
+  const reset = () => exec("TRUNCATE chunk_uploads.parts, chunk_uploads.uploads; UPDATE chunk_uploads.budget SET enabled=true, minute_start='-infinity', minute_ops=0,day_start='-infinity',day_ops=0,day_creates=0,day_executions=0,day_bytes=0");
   const putAll = async (body, key) => {
     for (let index = 0; index < Math.ceil(body.length / CHUNK_BYTES); index++) {
       await run({ action: 'put', token: key, index, chunk: body.subarray(index * CHUNK_BYTES, (index + 1) * CHUNK_BYTES).toString('base64url') });
@@ -140,7 +140,11 @@ test('upload database invariants and HTTP lifecycle', async (t) => {
     await assert.rejects(run({ action: 'status', token: keys[0] }), { code: 'upload_rate_limited' });
     await store.operate({ action: 'finish', tokenHash: digest(keys[0]) });
     await exec("UPDATE chunk_uploads.budget SET minute_start=clock_timestamp()-interval '61 seconds'");
+    await exec('UPDATE chunk_uploads.budget SET day_executions=64');
+    await assert.rejects(claim(keys[4]), { code: 'upload_daily_limit' });
+    await exec('UPDATE chunk_uploads.budget SET day_executions=63');
     await claim(keys[4]);
+    assert.equal((await db.query('SELECT day_executions FROM chunk_uploads.budget')).rows[0].day_executions, 64);
     await exec('UPDATE chunk_uploads.budget SET day_ops=6000');
     await assert.rejects(run({ action: 'status', token: keys[0] }), { code: 'upload_daily_limit' });
     await exec("UPDATE chunk_uploads.budget SET day_start=clock_timestamp()-interval '25 hours'");

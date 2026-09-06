@@ -59,7 +59,7 @@ upload database. They are not caller-configurable and do not trust IP headers.
 | Live uploads, including consumed tombstones | 32 |
 | Live logical payload storage | At most 8 MiB, plus at most 256 KiB routing metadata and row/index overhead |
 | Lifetime | Fixed expiry at most 15 minutes; retries never extend it |
-| New uploads per shared 24-hour window | 64 |
+| New uploads / execution claims per shared 24-hour window | 64 each |
 | Reserved body bytes per shared 24-hour window | 16 MiB; charged on creation, never refunded |
 | Public storage operations | 240 per shared minute window and 6000 per shared 24-hour window |
 | Concurrent chunk forwarding attempts | 4; interrupted claims occupy their slot until expiry |
@@ -81,7 +81,7 @@ stored until another call or operator cleanup. The fixed live-data bound applies
 in either case. PostgreSQL MVCC/WAL, backups, provider logs, and table/index overhead
 are not an 8 MiB disk/billing guarantee; normal vacuum and provider retention still
 apply. No chunk/status/rejection creates an append-only audit row. Only an admitted
-execution uses the existing logger (at most 64 per creation window).
+execution uses the existing logger (at most 64 per shared 24-hour window).
 
 A singleton row lock makes admission, cleanup, slot checks, immutable writes, and
 claims atomic. Lock contention returns 503 storage unavailable rather than waiting
