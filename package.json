@@ -9,12 +9,17 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "test": "node --test",
-    "build": "node --check api/builder.js && node --check lib/builder.js && node --check api/post.js && node --check lib/proxy.js && node --check lib/request-log.js",
+    "build": "node --check api/builder.js && node --check lib/builder.js && node --check api/post.js && node --check lib/proxy.js && node --check lib/request-log.js && node --check api/chunks.js && node --check lib/chunks.js",
     "db:setup": "node scripts/setup-db.mjs",
-    "test:db": "node scripts/verify-db.mjs"
+    "test:db": "node scripts/verify-db.mjs",
+    "db:setup-chunks": "node scripts/setup-chunks.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "1.1.0",
     "ipaddr.js": "2.4.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "pg": "^8.23.0"
   }
 }

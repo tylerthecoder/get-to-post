@@ -13,7 +13,7 @@ Reading /, /llms.txt, or /builder does not send a POST. Calling /api/post can.
 
 ## Logging
 
-Every converter API call is logged to a private Neon database, including rejected
+Every direct /api/post call is logged to a private Neon database, including rejected
 requests. Logs include the time, method, destination, POST body, query parameters,
 incoming and upstream request headers, response status, duration, and byte counts.
 Incoming headers may include your IP address and user agent. Upstream response
@@ -24,8 +24,8 @@ roughly every two weeks. I won't share them widely, but I may share logs with
 people at my own discretion if I think doing so will benefit humanity. There is
 no automatic deletion period.
 
-There is no public log viewer or log-reading API. The application is configured
-with an insert-only database role. Access still depends on database credentials,
+There is no public log viewer or log-reading API. The permanent logger uses an insert-only database role. Optional chunk storage
+uses a separate role that can call one bounded database function. Access still depends on database credentials,
 account permissions, and any tools or people I authorize. Neon and Vercel process
 request data to operate the service, subject to their own access controls.
 
@@ -97,6 +97,64 @@ Builder URLs and final API URLs each have a 12 KiB limit. Saved values plus an
 editing draft add overhead, so some requests that fit the direct API may not
 fit the builder. Unavailable links are marked; shorten fields or use the API.
 
+## Chunked payloads (optional; disabled unless configured)
+
+For bodies larger than a URL, GET /api/chunks supports at most 256 KiB. This is
+an API protocol; the link-only builder does not construct chunked uploads.
+All query values must be URL-encoded. No GET request bodies.
+
+1. Generate a fresh random 32-byte token (64 lowercase hex), prepare the exact
+   body bytes and lowercase SHA-256, and choose a fixed expires Unix timestamp
+   in seconds no more than 15 minutes ahead.
+2. GET /api/chunks?action=create&token=...&url=...&bytes=...&chunks=...&sha256=...&expires=...
+   bytes must be 1–262144, chunks must be ceil(bytes/4096). Optional headers,
+   response, timeout follow the direct API. Destination/options are frozen.
+3. GET /api/chunks?action=put&token=...&index=0&chunk=...
+   Split bytes into exactly 4096-byte chunks, except the last. Encode each in
+   canonical unpadded base64url, with indexes starting at zero. Send sequentially.
+   Binary and UTF-8 bodies are supported. No compression is performed.
+4. GET /api/chunks?action=status&token=... returns
+   {state,bytes,chunks,expiresAt,received:[0,1,...]}. Upload missing indexes.
+5. GET /api/chunks?action=execute&token=... sends one POST and returns the same
+   raw/JSON response format as /api/post. Finish uploads before the last minute
+   of their lifetime; execution within that final minute returns 410.
+
+Identical create/put retries are safe within the fixed lifetime. Different
+parameters/bytes at an existing token/index return 409. Expired create links
+cannot recreate uploads. Never reuse a token, even after expiry. State is open,
+claimed, or done. After claim, execution cannot be retried, even after a crash,
+logging failure, DNS error, or timeout. A lost response is ambiguous: inspect
+status and the upstream service. done does NOT mean upstream success. This is
+at most one attempt per upload, not exactly-once delivery. Use upstream idempotency
+keys; do not recreate an uncertain action under a new token.
+
+The token is a bearer capability: anyone with it can operate that upload. URLs
+can expose tokens, chunks, and headers through history, copied links, or provider
+logs. Do not upload confidential data. Temporary storage holds original bytes
+and headers, with the same owner/provider access and sharing policy stated above.
+It expires logically after at most 15 minutes and is physically deleted on the
+next storage operation; without traffic, expired data may remain within the fixed
+storage cap. Provider backups/logs have separate retention. Only execution writes
+a permanent request log: routing metadata is redacted normally, and the capability,
+chunks, and assembled body are omitted. Rejected/upload/status calls are not added
+to the permanent database log. Response bodies are not stored.
+
+Limits are global per upload database: 32 live uploads / at most 8 MiB body data,
+64 creations and 64 execution claims / 16 MiB reserved body data per 24-hour window,
+240 operations/minute,
+6000 operations/24-hour window, four simultaneous forwarding attempts. Fixed-window
+boundaries can allow two windows' allowance close together. Retries count toward
+operation limits; expiry does not refund daily reservations. Unknown tokens and
+conflicts also count. 429 returns Retry-After; no availability guarantee. Unknown
+or expired token: 404; conflicting/incomplete/consumed or hash mismatch: 409;
+disabled/unavailable storage: 503. A lost execution claim response may have committed.
+
+Each URL still has a 12 KiB limit; creation options have an 8 KiB encoded limit.
+The existing 1 MiB response cap, timeouts, destination protections, no-prefetch,
+no-cache, optional incoming API key, and logging-before-forwarding rules apply.
+Public upload quotas can be exhausted by one caller. They do not cap flood
+traffic, provider costs, or direct /api/post use; operator edge controls are separate.
+
 ## Parameters
 
 - url (required): Absolute public HTTPS destination, port 443 only. No URL
@@ -142,8 +200,8 @@ X-Request-Log-Status is complete, request-only, or unavailable.
 - Host, Content-Length, Accept-Encoding, hop-by-hop, proxy, X-Forwarded-*, and
   X-Vercel-* request headers cannot be overridden. Caller credentials/cookies are
   never forwarded automatically; only explicit upstream headers are sent.
-- Limits: 12 KiB encoded URL, 1 MiB upstream response, no binary uploads/streaming.
+- Limits: 12 KiB encoded URL, 1 MiB upstream response, no streaming; binary uploads require the optional chunk API.
   Clients or Vercel may impose smaller URL limits. Public, best-effort service;
-  no application-level rate limit or availability guarantee. CORS is enabled.
+  no application-level rate limit for /api/post or availability guarantee. CORS is enabled.
 - If the owner enables PROXY_API_KEY, send Authorization: Bearer <key> on the
   incoming GET. Do not put that key in the URL or upstream headers parameter.

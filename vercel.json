@@ -3,7 +3,7 @@
   "framework": null,
   "outputDirectory": "public",
   "rewrites": [{ "source": "/builder", "destination": "/api/builder" }],
-  "functions": { "api/post.js": { "maxDuration": 30 } },
+  "functions": { "api/post.js": { "maxDuration": 30 }, "api/chunks.js": { "maxDuration": 40 } },
   "headers": [{ "source": "/(.*)", "headers": [
     { "key": "X-Content-Type-Options", "value": "nosniff" },
     { "key": "Referrer-Policy", "value": "no-referrer" },
