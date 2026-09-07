@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS request_logging.requests (
   url_bytes integer NOT NULL,
   truncated boolean NOT NULL DEFAULT false,
   environment text NOT NULL,
-  deployment text
+  deployment text,
+  client_ip inet,
+  client_ip_source text
 );
 
 CREATE TABLE IF NOT EXISTS request_logging.outcomes (

@@ -16,7 +16,7 @@ Reading /, /llms.txt, or /builder does not send an upstream request. Calling /ap
 Every converter API call is logged to a private Neon database, including rejected
 requests. Logs include the time, method, destination, request body, query parameters,
 incoming and upstream request headers, response status, duration, and byte counts.
-Incoming headers may include your IP address and user agent. Upstream response
+Your IP address is stored in a dedicated log field when available; incoming headers also include metadata such as your user agent. Upstream response
 bodies are not stored. Static pages, assets, and builder navigation are not part of this API log.
 
 The database is private and under my control. I, Tyler Tracy, will read the logs
