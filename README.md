@@ -16,7 +16,7 @@ entirely through ordinary hyperlinks.
 ## Privacy and request logging
 
 API calls are logged to a private Neon database, including the destination, body,
-headers, and outcome. Incoming headers may include your IP address and user agent.
+headers, and outcome. Your IP address is stored in a dedicated log field when available; incoming headers also include metadata such as your user agent.
 Upstream response bodies are not stored. There is no automatic deletion period.
 
 Tyler Tracy reads the logs roughly every two weeks. He will not share them widely,

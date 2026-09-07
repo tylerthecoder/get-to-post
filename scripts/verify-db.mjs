@@ -8,14 +8,17 @@ const writer = neon(process.env.REQUEST_LOG_DATABASE_URL);
 const logger = createRequestLogger();
 const record = requestRecord({
   method: 'GET',
+  socket: { remoteAddress: '192.0.2.42' },
   url: `/api/post?${new URLSearchParams({ url: 'https://httpbin.org/post', data: '{"message":"database-permission-test","token":"example-secret"}', headers: '{"Authorization":"Bearer example-secret"}' })}`,
-  headers: { 'user-agent': 'get2post-db-verification' },
+  headers: { 'x-forwarded-for': '192.0.2.42', 'user-agent': 'get2post-db-verification' },
 });
 try {
   await logger.start(record);
   await logger.finish(record.id, { httpStatus: 200, upstreamStatus: 200, errorCode: null, durationMs: 1, responseBytes: 2 });
-  const [saved] = await owner`SELECT r.query, o.http_status FROM request_logging.requests r JOIN request_logging.outcomes o ON o.request_id = r.id WHERE r.id = ${record.id}`;
+  const [saved] = await owner`SELECT r.query, host(r.client_ip) AS client_ip, r.client_ip_source, o.http_status FROM request_logging.requests r JOIN request_logging.outcomes o ON o.request_id = r.id WHERE r.id = ${record.id}`;
   assert.equal(saved.http_status, 200);
+  assert.equal(saved.client_ip, record.clientIp);
+  assert.equal(saved.client_ip_source, record.clientIpSource);
   assert.ok(!JSON.stringify(saved.query).includes('example-secret'));
   for (const statement of [
     'SELECT * FROM request_logging.requests LIMIT 1',

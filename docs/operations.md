@@ -17,9 +17,17 @@ Vercel serves `public/` and deploys `api/post.js`. Set `REQUEST_LOG_DATABASE_URL
 
 ## Request logging
 
+Before deploying the IP-aware logger to an existing database, run
+[`db/002-client-ip.sql`](../db/002-client-ip.sql) as the owner in Neon SQL Editor.
+Apply it to preview and production databases before their respective deployments.
+The migration is additive, preserves writer permissions, and leaves historical
+rows NULL. Fresh databases get these columns through `npm run db:setup`.
+Do not rerun setup against an existing writer role.
+
+
 Each invocation of `/api/post` records a request row **before** forwarding, including rejected requests, HEAD, and OPTIONS. A second insert records the outcome before returning. Both writes are awaited with separate 3-second limits; the upstream deadline remains 20 seconds maximum (Vercel function budget: 30 seconds).
 
-- `request_logging.requests`: UUID, time, method/path, query parameters (array preserving duplicates), incoming headers, URL size, truncation flag, environment, deployment. Query parameters include destination, body, and explicit upstream headers. Proxy headers can include client IPs.
+- `request_logging.requests`: UUID, time, method/path, query parameters (array preserving duplicates), incoming headers, URL size, truncation flag, environment, deployment. Query parameters include destination, body, and explicit upstream headers. Dedicated `client_ip` (PostgreSQL `inet`) and `client_ip_source` fields store the caller address when available. On Vercel (`VERCEL=1`), the first validated `x-forwarded-for` address is used; outside Vercel, only the socket peer is used, ignoring spoofable forwarding headers. Missing or invalid addresses stay NULL. An agent, VPN, or proxy address may identify that intermediary rather than the end user. See [Vercel request headers](https://vercel.com/docs/headers/request-headers#x-forwarded-for).
 - `request_logging.outcomes`: request UUID, finish time, HTTP/upstream status, error code, duration, and response byte count. Response bodies are not logged.
 - Common credential fields are redacted in headers, URLs, JSON, and form bodies. Malformed JSON bodies and text/XML are retained with best-effort redaction: a recognizable credential assignment causes its value and the remaining text to be redacted. Arbitrary secrets cannot reliably be identified. Invalid structured headers and URLs are omitted. Logging caps URL input and incoming header values at 16 KiB each, and structured nesting at 20 levels. Oversized input retains metadata with omission markers. The API's 12 KiB URL limit applies independently.
 - The runtime role has only schema USAGE and table INSERT, with no SELECT/UPDATE/DELETE/DDL privileges. There is no log-reading route or frontend database client. Administrative access depends on Neon/Vercel account permissions, database credentials, and delegated tools or people; the source cannot prove exclusive access or deployed permissions.

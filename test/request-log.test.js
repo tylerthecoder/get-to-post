@@ -11,6 +11,42 @@ const target = (params = {}) => `/api/post?${new URLSearchParams({ url: 'https:/
 const req = (params = {}, headers = {}) => ({ method: 'GET', url: target(params), headers });
 const query = (record, key) => record.query.find(([name]) => name === key)?.[1];
 
+function setVercel(t, value) {
+  const previous = process.env.VERCEL;
+  process.env.VERCEL = value;
+  t.after(() => {
+    if (previous === undefined) delete process.env.VERCEL;
+    else process.env.VERCEL = previous;
+  });
+}
+
+test('Vercel captures validated IPv4 and IPv6 addresses with provenance', (t) => {
+  setVercel(t, '1');
+  for (const ip of ['192.0.2.42', '2001:db8::42', '::ffff:192.0.2.42']) {
+    const record = requestRecord(req({}, { 'x-forwarded-for': ` ${ip}, 198.51.100.1` }));
+    assert.equal(record.clientIp, ip);
+    assert.equal(record.clientIpSource, 'x-forwarded-for');
+  }
+});
+
+test('invalid or missing Vercel addresses stay NULL instead of breaking logging', (t) => {
+  setVercel(t, '1');
+  for (const value of [undefined, '', 'unknown', '192.0.2.42:80', '192.0.2.42/24', 'fe80::1%eth0', ['192.0.2.42'], 'x'.repeat(1025), 'invalid, 192.0.2.42']) {
+    const record = requestRecord({ ...req({}, { 'x-forwarded-for': value }), socket: { remoteAddress: '127.0.0.1' } });
+    assert.equal(record.clientIp, null);
+    assert.equal(record.clientIpSource, null);
+  }
+});
+
+test('outside Vercel uses the socket peer and ignores forged forwarding headers', (t) => {
+  setVercel(t, '0');
+  const request = { ...req({}, { 'x-forwarded-for': '192.0.2.42', 'x-real-ip': '192.0.2.43' }), socket: { remoteAddress: '::1' } };
+  assert.equal(requestRecord(request).clientIp, '::1');
+  assert.equal(requestRecord(request).clientIpSource, 'socket');
+  delete request.socket;
+  assert.equal(requestRecord(request).clientIp, null);
+});
+
 test('logs request details while redacting credentials in nested JSON, URLs and headers', () => {
   const record = requestRecord(req({
     url: 'https://user:example-pass@example.com/path?token=example-token&mode=test',
@@ -150,10 +186,12 @@ test('outcome-write failure preserves the actual POST response and durable reque
 test('database logger parameterizes payloads and supplies a fresh deadline for each write', async () => {
   const calls = [];
   const logger = createRequestLogger({ connectionString: () => 'test-connection', client: () => ({ query: async (...args) => calls.push(args) }) });
-  const record = requestRecord(req({ data: JSON.stringify({ message: "'; DROP TABLE request_logging.requests; --" }) }));
+  const record = requestRecord({ ...req({ data: JSON.stringify({ message: "'; DROP TABLE request_logging.requests; --" }) }), socket: { remoteAddress: '192.0.2.42' } });
   await logger.start(record);
   await logger.finish(record.id, { httpStatus: 200, upstreamStatus: 200, errorCode: null, durationMs: 4, responseBytes: 2 });
   assert.equal(calls.length, 2);
+  assert.match(calls[0][0], /client_ip, client_ip_source/);
+  assert.deepEqual(calls[0][1].slice(-2), [record.clientIp, record.clientIpSource]);
   assert.ok(!calls[0][0].includes('DROP TABLE'));
   assert.ok(calls[0][1].some((value) => typeof value === 'string' && value.includes('DROP TABLE')));
   assert.notEqual(calls[0][2].fetchOptions.signal, calls[1][2].fetchOptions.signal);
@@ -166,6 +204,7 @@ test('AI guide, logging disclosure, and usable examples exist without JavaScript
   for (const content of [html, guide]) {
     assert.match(content, /AI agent/); assert.match(content, /Tyler Tracy/);
     assert.match(content, /benefit humanity/); assert.match(content, /curl --get/);
+    assert.match(content, /IP address is stored in a dedicated log field/);
     assert.match(content, /response=json/); assert.match(content, /Neon/);
   }
   assert.ok(html.indexOf('Requests are logged') < html.indexOf('curl --get'));

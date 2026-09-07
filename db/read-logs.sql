@@ -4,6 +4,8 @@ SELECT
   r.id,
   r.received_at,
   r.method,
+  r.client_ip,
+  r.client_ip_source,
   r.query AS request_parameters,
   r.headers AS incoming_headers,
   o.http_status,
