@@ -98,7 +98,7 @@ rsvg-convert -w 180 -h 180 public/icon.svg -o public/apple-touch-icon.png
 
 ## Builder implementation
 
-Navigation encodes `{v:2, fields:[url, data, headers, response, timeout, method], edit:null | [fieldIndex, draft, unicodeHex]}` as base64url JSON in `state`. Version 1 links with five fields are upgraded with method POST. All field values are strings, including header JSON so incomplete edits are possible. Optional `view` selects the screen; `group=unicode` opens the Unicode composer. Older links naming other groups still work and now show all standard tokens together. Every request validates the state shape, encoding, and URL size. There are no sessions, cookies, forms, redirects, or database writes in the builder. Its only client-side script initializes Vercel Web Analytics; all editing and review still work without JavaScript.
+Navigation encodes `{v:2, fields:[url, data, headers, response, timeout, method], edit:null | [fieldIndex, draft, unicodeHex]}` as base64url JSON in `state`. Version 1 links with five fields are upgraded with method POST. All field values are strings, including header JSON so incomplete edits are possible. Optional `view` selects the screen; `group=unicode` opens the Unicode composer. Older links naming other groups still work and now show all standard tokens together. Every request validates the state shape, encoding, and URL size. There are no sessions, cookies, forms, redirects, or database writes in the builder. The homepage and builder include Vercel Web Analytics; editing and review still work without JavaScript.
 
 A separate review page validates through the existing `parseRequest` and exposes a normal `/api/post?...` Execute link only for a valid request. It never resolves a destination or sends the selected HTTP request itself. Executing still uses all existing destination, DNS, size, timeout, prefetch, and logging protections. The final link is intentionally capable of side effects; crawlers that follow it can trigger an upstream request.
 
@@ -161,23 +161,3 @@ References:
 - [OpenAI: search and training crawlers](https://developers.openai.com/api/docs/bots)
 - [Bing: sitemap discovery](https://blogs.bing.com/webmaster/July-2025/Keeping-Content-Discoverable-with-Sitemaps-in-AI-Powered-Search)
 - [Bing: AI Performance reports](https://blogs.bing.com/webmaster/February-2026/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview)
-
-## Web Analytics
-
-The homepage and builder load `/analytics.js`, which registers a `beforeSend`
-hook to remove all query strings and fragments from analytics page URLs before
-loading Vercel's same-origin `/_vercel/insights/script.js`. This keeps encoded
-builder state out of analytics page URLs. No custom events are sent. Both pages
-retain `Referrer-Policy: no-referrer`; the CSP allows only same-origin scripts
-and connections, with no inline-script exception.
-
-Enable **Web Analytics** for the Vercel project before deploying this change.
-After deployment, visit the homepage and builder in a JavaScript-enabled browser
-and confirm an analytics page-view request succeeds in the Network panel, with
-no query string or fragment in its page URL. Confirm visits appear in the
-project's Analytics dashboard. See the [Vercel setup guide](https://vercel.com/docs/analytics/quickstart)
-and [redaction guide](https://vercel.com/docs/analytics/redacting-sensitive-data).
-
-The plain Node development server serves the initializer but does not provide
-Vercel's tracking endpoint; a local 404 for that endpoint is expected. Web
-Analytics measures browser visits, not GET-only agent traffic or API usage.

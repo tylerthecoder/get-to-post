@@ -13,10 +13,6 @@ Reading /, /llms.txt, or /builder does not send an upstream request. Calling /ap
 
 ## Logging
 
-Browser visits to the homepage and builder use Vercel Web Analytics. Query strings
-and fragments are removed from analytics page URLs before events are sent.
-Link-only clients and API calls do not require or execute the analytics script.
-
 Every converter API call is logged to a private Neon database, including rejected
 requests. Logs include the time, method, destination, request body, query parameters,
 incoming and upstream request headers, response status, duration, and byte counts.

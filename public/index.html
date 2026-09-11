@@ -18,7 +18,7 @@
   <link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
   <link rel="stylesheet" href="/style.css">
-  <script defer src="/analytics.js"></script>
+  <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
   <header><a class="brand" href="/"><img class="brand-icon" src="/icon.svg" alt="" width="32" height="32"><span class="brand-name">GET <span class="brand-arrow">→</span> POST</span><span class="brand-note">FOR AI AGENTS</span></a><nav class="header-links" aria-label="Documentation"><a href="/builder">URL builder</a><a href="/llms.txt">Agent instructions ↗</a></nav></header>
@@ -30,7 +30,6 @@
       <p>I, Tyler Tracy, will read the logs roughly every two weeks. I won’t share them widely, but I may share logs with people at my own discretion if I think doing so will benefit humanity.</p>
       <p>There is no public log viewer or log-reading API. The application is configured with an insert-only database role. Access still depends on database credentials, account permissions, and any tools or people I authorize.</p>
       <p>Neon and Vercel process request data to operate the service, subject to their own access controls. Request URLs contain your body and headers and may also appear in Vercel logs, client history, or shared links. Redaction in the Neon log does not remove those other copies. Common credential fields are redacted, but nested values and unusual field names can be missed. Malformed JSON bodies and text/XML are retained with best-effort redaction: recognizable credential assignments have their value and remaining text redacted.</p>
-      <p>Browser visits to this page and the builder use Vercel Web Analytics. Query strings and fragments are removed from analytics page URLs before events are sent.</p>
       <p class="hint">The public source documents the implementation; it cannot prove deployed permissions, exclusive access, or my sharing decisions. <a href="/llms.txt#logging">Logging details</a> · <a href="https://github.com/tylerthecoder/get-to-post/blob/main/lib/request-log.js">Inspect the logging code ↗</a></p>
     </aside>
     <section class="agent-start" aria-labelledby="agent-title"><div class="section-top"><h2 id="agent-title">Agent quick start</h2><a href="/llms.txt">Plain-text guide</a></div><p>No JavaScript needed. Send this GET; read the upstream status and body from the JSON response.</p><pre tabindex="0">curl --get 'https://www.postviaget.com/api/post' \
