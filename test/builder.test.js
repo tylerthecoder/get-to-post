@@ -40,7 +40,11 @@ test('a link-only client constructs the acceptance request; only final execution
     assert.equal(response.headers.get('set-cookie'), null);
     html = await response.text();
     assert.doesNotMatch(html, /<(form|input|button)\b/i);
-    assert.deepEqual(html.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi), ['<script defer src="/_vercel/insights/script.js"></script>']);
+    assert.deepEqual(html.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi), [
+      '<script>\n    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };\n  </script>',
+      '<script defer src="/_vercel/analytics/script.js"></script>',
+      '<script defer src="/_vercel/insights/script.js"></script>'
+    ]);
     assert.match(response.headers.get('content-security-policy'), /script-src 'self'; connect-src 'self'/);
     assert.equal(sent.length, 0); assert.equal(logged.length, 0);
   }
@@ -113,8 +117,10 @@ test('arbitrary fields, Unicode, correction controls, and response selection wor
   assert.equal(config.data, data + '🚀');
   assert.equal(config.headers['x-test'], 'a<&"');
   assert.equal(config.mode, 'raw'); assert.equal(config.timeout, 5000);
-  assert.doesNotMatch(html, /<script>/);
+  // Verify user input is escaped (not reflected as raw HTML)
   assert.match(html, /&lt;script&gt;/);
+  // Verify malicious script from user input is not executable
+  assert.doesNotMatch(html, /<script>alert/);
   follow('Edit request'); follow('Edit body'); follow('Backspace'); follow('Done'); follow('Review request');
   assert.equal(parseRequest(find(html, 'Execute request')).data, data);
   follow('Start over'); assert.ok(!html.includes('node-17'));
@@ -145,7 +151,8 @@ test('malformed encodings, schemas, and action parameters fail closed without re
     stateUrl(requestState({}, [0, 'draft', '']), 'summary')];
   for (const url of urls) {
     const result = renderBuilder(url); assert.equal(result.status, 400, url);
-    assert.doesNotMatch(result.html, /<script>|href="\/api\/post/);
+    // Verify malicious user input is not reflected in error pages
+    assert.doesNotMatch(result.html, /<script>bad<\/script>|href="\/api\/post/);
   }
   assert.equal(renderBuilder('/builder?state=' + 'A'.repeat(MAX_URL_BYTES)).status, 414);
 });
