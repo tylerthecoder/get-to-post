@@ -39,7 +39,9 @@ test('a link-only client constructs the acceptance request; only final execution
     assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
     assert.equal(response.headers.get('set-cookie'), null);
     html = await response.text();
-    assert.doesNotMatch(html, /<(script|form|input|button)\b/i);
+    assert.doesNotMatch(html, /<(form|input|button)\b/i);
+    assert.deepEqual(html.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi), ['<script defer src="/analytics.js"></script>']);
+    assert.match(response.headers.get('content-security-policy'), /script-src 'self'; connect-src 'self'/);
     assert.equal(sent.length, 0); assert.equal(logged.length, 0);
   }
   const follow = (label) => visit(find(html, label));

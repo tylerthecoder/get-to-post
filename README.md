@@ -25,6 +25,10 @@ Neon and Vercel process request data to operate the service. Database access dep
 on account permissions, credentials, and authorized tools or people; there is no
 public log viewer or log-reading API.
 
+Browser visits to the homepage and builder use Vercel Web Analytics. Query strings
+and fragments are removed from analytics page URLs before sending events.
+The API and link-only clients do not need JavaScript.
+
 ## Quick start
 
 ```sh
