@@ -66,7 +66,7 @@ Tyler approved publishing the repository and launching request logging. Merges t
 
 To view logs, open the production database in the personal Vercel team's Storage dashboard, choose **Open in Neon**, and use **SQL Editor** with the owner role. Run the query above, or use [`db/read-logs.sql`](../db/read-logs.sql) to include request headers and identify incomplete outcomes. The tables are `request_logging.requests` and `request_logging.outcomes` in `neondb`. No logs are published in this repository.
 
-The homepage contains the disclosure, curl quick start, and API reference without client-side JavaScript; link-only editing lives separately at `/builder`. `/llms.txt` contains the same policy and full agent-oriented API reference.
+The homepage contains the disclosure, curl quick start, and API reference without requiring client-side JavaScript; link-only editing lives separately at `/builder`. `/llms.txt` contains the same policy and full agent-oriented API reference.
 
 ## Operational boundaries
 
@@ -98,7 +98,7 @@ rsvg-convert -w 180 -h 180 public/icon.svg -o public/apple-touch-icon.png
 
 ## Builder implementation
 
-Navigation encodes `{v:2, fields:[url, data, headers, response, timeout, method], edit:null | [fieldIndex, draft, unicodeHex]}` as base64url JSON in `state`. Version 1 links with five fields are upgraded with method POST. All field values are strings, including header JSON so incomplete edits are possible. Optional `view` selects the screen; `group=unicode` opens the Unicode composer. Older links naming other groups still work and now show all standard tokens together. Every request validates the state shape, encoding, and URL size. There are no sessions, cookies, forms, scripts, redirects, or database writes in the builder.
+Navigation encodes `{v:2, fields:[url, data, headers, response, timeout, method], edit:null | [fieldIndex, draft, unicodeHex]}` as base64url JSON in `state`. Version 1 links with five fields are upgraded with method POST. All field values are strings, including header JSON so incomplete edits are possible. Optional `view` selects the screen; `group=unicode` opens the Unicode composer. Older links naming other groups still work and now show all standard tokens together. Every request validates the state shape, encoding, and URL size. There are no sessions, cookies, forms, redirects, or database writes in the builder. The homepage and builder include Vercel Web Analytics; editing and review still work without JavaScript.
 
 A separate review page validates through the existing `parseRequest` and exposes a normal `/api/post?...` Execute link only for a valid request. It never resolves a destination or sends the selected HTTP request itself. Executing still uses all existing destination, DNS, size, timeout, prefetch, and logging protections. The final link is intentionally capable of side effects; crawlers that follow it can trigger an upstream request.
 
